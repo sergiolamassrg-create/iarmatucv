@@ -1,0 +1,86 @@
+<section class="hero container" id="inicio" aria-labelledby="hero-title">
+  <div class="hero-copy">
+    <p class="eyebrow"><app-icon name="spark" /> Tu historia merece destacarse</p>
+    <h1 id="hero-title">Tu próximo<br>trabajo empieza <em>acá<span class="underline-swoosh" aria-hidden="true"></span></em></h1>
+    <p class="hero-description">Un CV que hable de vos. Profesional, personalizado y con tu estilo. Tu próximo paso empieza con lo que ya sabés hacer.</p>
+    <div class="hero-actions">
+      <a class="btn btn-gradient btn-large fx-shine fx-glow" routerLink="/acceso"><app-icon name="spark" /> Crear mi CV <app-icon name="arrow" /></a>
+      <a class="btn btn-white btn-large fx-slide" routerLink="/" fragment="plantillas"><span class="play-icon"><app-icon name="play" /></span> Explorar diseños</a>
+    </div>
+    <div class="hero-highlights" aria-label="Nuestra propuesta">
+      <span><app-icon name="check" /> Con tu estilo</span><span><app-icon name="check" /> Paso a paso</span><span><app-icon name="check" /> Desde cualquier pantalla</span>
+    </div>
+    <p class="release-note"><span class="release-dot" aria-hidden="true"></span> Estamos construyendo la experiencia. El editor llega en una próxima etapa.</p>
+  </div>
+  <div class="hero-art">
+    <span class="hero-orbit orbit-one" aria-hidden="true"></span>
+    <img src="assets/hero-reference.png" alt="Concepto visual de iArmatuCV: una persona junto a un asistente y diseños de currículum" width="1016" height="522" fetchpriority="high">
+    <p class="art-caption">Ilustración del producto que imaginamos. IA y PDF: funciones futuras.</p>
+  </div>
+</section>
+
+<section class="features container" id="como-funciona" aria-label="Una experiencia pensada para vos">
+  <article class="feature-card"><span class="feature-icon violet"><app-icon name="chat" /></span><div><h2>Tu historia,<br>paso a paso</h2><p>Ordená tus ideas y dale forma a tu recorrido profesional.</p></div></article>
+  <article class="feature-card"><span class="feature-icon amber"><app-icon name="spark" /></span><div><h2>Lo que te hace<br>diferente</h2><p>Tu experiencia y tus habilidades merecen destacarse.</p></div></article>
+  <article class="feature-card"><span class="feature-icon blue"><app-icon name="file" /></span><div><h2>Un diseño<br>muy vos</h2><p>Explorá estilos para encontrar el que mejor te representa.</p></div></article>
+  <article class="feature-card"><span class="feature-icon cyan"><app-icon name="eye" /></span><div><h2>Cada detalle<br>cuenta</h2><p>Una presentación clara para tu próximo gran paso.</p></div></article>
+</section>
+
+<section class="templates-section" id="plantillas" aria-labelledby="templates-title">
+  <div class="container">
+    <div class="section-top">
+      <div><p class="section-kicker">TU CONTENIDO. TU PERSONALIDAD.</p><h2 id="templates-title">Plantillas para <span class="gradient-text">cada estilo</span></h2><p>Probá, compará y encontrá tu favorita. ¿Cuál va con vos?</p></div>
+      <button class="btn btn-outline fx-border" type="button" (click)="openPreview()" [disabled]="!selectedTemplate"><app-icon name="eye" /> Ampliar vista previa <app-icon name="arrow" /></button>
+    </div>
+    @if (state === 'loading') {
+      <div class="gallery-feedback" role="status"><span class="loading-mark" aria-hidden="true"></span><p>Cargando diseños…</p></div>
+    }
+    @if (state === 'error') {
+      <div class="gallery-feedback" role="alert"><p>No pudimos cargar los diseños. Intentá nuevamente.</p><button class="btn btn-outline" type="button" (click)="loadTemplates()">Reintentar</button></div>
+    }
+    @if (state === 'success' && templates.length === 0) {
+      <p class="gallery-feedback" role="status">Todavía no hay diseños disponibles.</p>
+    }
+    <div class="template-gallery" aria-label="Explorar diseños de CV" [attr.aria-busy]="state === 'loading'">
+      @for (template of templates; track template.slug; let i = $index) {
+        <button type="button" class="template-card" [class.selected]="selectedTemplate?.slug === template.slug" [attr.aria-pressed]="selectedTemplate?.slug === template.slug" [attr.aria-label]="'Explorar ' + template.name" (click)="selectTemplate(template)" [style.--card-order]="i">
+          <span class="template-badge">{{ template.label }}</span>
+          <span class="template-check" aria-hidden="true"><app-icon name="check" /></span>
+          <span class="template-paper" aria-hidden="true"><app-cv-preview [variant]="template.slug" /></span>
+          <span class="template-name">{{ template.name }} <span class="template-arrow" aria-hidden="true">↗</span></span>
+        </button>
+      }
+    </div>
+    @if (selectedTemplate; as selected) {
+    <div class="selection-bar">
+      <div class="selection-copy" aria-live="polite" aria-atomic="true"><span class="selection-spark" aria-hidden="true">✦</span><p>Estás explorando <strong>{{ selected.name }}</strong><span>{{ selected.description }}</span></p></div>
+      <button class="text-link" type="button" (click)="openPreview()">Ver diseño <app-icon name="arrow" /></button>
+    </div>
+    }
+    <p class="gallery-note">Vistas ilustrativas con datos de ejemplo. Todavía no se aplican a un CV ni se guardan.</p>
+  </div>
+</section>
+
+<section class="next-step container" aria-labelledby="next-title">
+  <span class="next-spark spark-left" aria-hidden="true">✦</span><span class="next-spark spark-right" aria-hidden="true">✦</span>
+  <p class="section-kicker">TU HISTORIA RECIÉN EMPIEZA</p><h2 id="next-title">Un nuevo comienzo.<br><span class="gradient-text">Una versión más vos.</span></h2>
+  <p>No hace falta tener todo resuelto para dar el primer paso.</p>
+  <a class="btn btn-gradient btn-large fx-shine fx-glow" routerLink="/acceso">Conocé lo que viene <app-icon name="arrow" /></a>
+</section>
+
+<section class="faq-section container" id="preguntas" aria-labelledby="faq-title">
+  <div class="faq-heading"><p class="section-kicker">ANTES DE EMPEZAR</p><h2 id="faq-title">¿Te quedó alguna duda?</h2><p>Las cosas claras, desde el primer paso.</p></div>
+  <div class="faq-list">
+    <details><summary>¿Necesito saber diseñar?<span aria-hidden="true">+</span></summary><p>No. La propuesta es acompañarte para organizar tu información y elegir una presentación con la que te identifiques.</p></details>
+    <details><summary>¿Ya puedo crear y guardar mi CV?<span aria-hidden="true">+</span></summary><p>Estamos construyendo esa parte. Hoy podés explorar los diseños y sus vistas previas. El registro, el editor y el guardado todavía no están disponibles.</p></details>
+    <details><summary>¿Puedo usarlo desde el celular?<span aria-hidden="true">+</span></summary><p>Sí, podés recorrer esta web y explorar los estilos desde tu celular, tablet o computadora.</p></details>
+    <details><summary>¿Incluye IA y descarga en PDF?<span aria-hidden="true">+</span></summary><p>Son parte de la visión del producto y de la ilustración de portada, pero todavía no están disponibles. Su implementación se definirá en próximas etapas.</p></details>
+  </div>
+</section>
+
+<dialog #previewDialog class="preview-dialog" aria-labelledby="preview-title" (click)="closeOnBackdrop($event)" (close)="onDialogClosed()" (keydown.arrowleft)="changeTemplate(-1); $event.preventDefault()" (keydown.arrowright)="changeTemplate(1); $event.preventDefault()">
+  @if (selectedTemplate; as selected) {
+  <div class="preview-heading"><div><p class="section-kicker">EXPLORÁ TU ESTILO</p><h2 id="preview-title">{{ selected.name }}</h2></div><button class="icon-button" type="button" (click)="closePreview()" aria-label="Cerrar vista previa" autofocus><app-icon name="close" /></button></div>
+  <div class="preview-layout"><div class="preview-sheet"><app-cv-preview [variant]="selected.slug" [compact]="false" /></div><div class="preview-info"><span class="eyebrow">{{ selected.label }}</span><h3>El mismo recorrido.<br>Otra forma de contarlo.</h3><p>{{ selected.description }}</p><p class="quiet-note">Estás viendo una referencia con datos ficticios. Esta vista no crea, guarda ni exporta un currículum.</p><div class="preview-controls"><button class="icon-button previous" type="button" (click)="changeTemplate(-1)" aria-label="Diseño anterior"><app-icon name="chevron" /></button><span aria-live="polite">{{ templates.indexOf(selected) + 1 }} de {{ templates.length }}</span><button class="icon-button" type="button" (click)="changeTemplate(1)" aria-label="Diseño siguiente"><app-icon name="chevron" /></button></div><button class="btn btn-outline" type="button" (click)="closePreview()">Seguir explorando <app-icon name="arrow" /></button></div></div>
+  }
+</dialog>

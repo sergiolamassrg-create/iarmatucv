@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="es-AR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="theme-color" content="#6366f1" />
+  <title>iArmatuCV — Tu próximo trabajo empieza acá</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Outfit:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css" />
+  <link rel="stylesheet" href="improvements.css" />
+  <link rel="stylesheet" href="animations.css" />
+</head>
+<body>
+  <header class="site-header">
+    <a class="brand" href="#inicio" aria-label="iArmatuCV, inicio"><span class="brand-star">✦</span><span>iArmatu</span><span class="brand-cv">CV</span><span class="brand-spark">✦</span></a>
+    <nav class="main-nav" aria-label="Navegación principal">
+      <a class="active" href="#inicio">Inicio</a><a href="botonera.html">Botonera ✦</a><a href="#como-funciona">Cómo funciona</a><a href="#plantillas">Plantillas</a><a href="#precios">Precios</a><a href="#preguntas">Preguntas</a>
+    </nav>
+    <div class="header-actions"><button class="theme-toggle" id="themeToggle" aria-label="Activar modo oscuro" aria-pressed="false" title="Cambiar tema"><svg class="ui-icon"><use href="#icon-sun"></use></svg></button><a class="btn btn-outline login" href="#como-funciona" data-demo="login">Iniciar sesión</a><a class="btn btn-gradient header-cta fx-shine" href="#plantillas" data-demo="start">Crear mi CV</a></div>
+  </header>
+  <main>
+    <section class="hero container" id="inicio">
+      <div class="hero-copy">
+        <div class="eyebrow"><span>✦</span> Tu CV, con IA, sin complicaciones</div>
+        <h1>Tu próximo<br>trabajo empieza <em>acá<span class="underline-swoosh"></span></em></h1>
+        <p>Creá un CV profesional y personalizado con la ayuda de inteligencia artificial. Rápido, simple y pensado para vos.</p>
+        <div class="hero-buttons"><a class="btn btn-gradient btn-large fx-shine" href="#plantillas" data-demo="start">✦ &nbsp; Crear mi CV con IA <span aria-hidden="true">→</span></a><a class="btn btn-white btn-large fx-slide" href="#como-funciona"><span class="play">▶</span> Ver ejemplos</a></div>
+        <div class="stats" aria-label="Cifras ilustrativas del boceto"><div><strong>+10.000</strong><small>CV creados</small></div><div><strong>95%</strong><small>Lo recomienda</small></div><div><strong>5 min</strong><small>Tiempo promedio</small></div></div>
+        <p class="prototype-note">* Datos de demostración: no representan estadísticas reales.</p>
+      </div>
+      <div class="hero-art"><img src="assets/hero-reference.png" alt="Ilustración de la propuesta visual: persona, asistente de IA y currículums de ejemplo" /></div>
+    </section>
+    <section class="features container" id="como-funciona" aria-label="Beneficios">
+      <article class="feature-card"><span class="feature-icon violet"><svg class="ui-icon"><use href="#icon-chat"></use></svg></span><div><h3>Te guiamos<br>paso a paso</h3><p>Un asistente de IA te hace las preguntas y completa tu CV por vos.</p></div></article>
+      <article class="feature-card"><span class="feature-icon amber"><svg class="ui-icon"><use href="#icon-zap"></use></svg></span><div><h3>Contenido<br>profesional</h3><p>Tips y recomendaciones para destacar en el mercado laboral.</p></div></article>
+      <article class="feature-card"><span class="feature-icon blue"><svg class="ui-icon"><use href="#icon-file"></use></svg></span><div><h3>Plantillas<br>modernas</h3><p>Diseños adaptados a distintos perfiles y sectores.</p></div></article>
+      <article class="feature-card"><span class="feature-icon cyan"><svg class="ui-icon"><use href="#icon-download"></use></svg></span><div><h3>Descargá<br>y compartí</h3><p>Obtené tu CV en PDF listo para postularte.</p></div></article>
+    </section>
+    <section class="templates-section" id="plantillas"><div class="container"><div class="section-top"><div><h2>Plantillas para <span>cada estilo</span></h2><p>Elegí un diseño, nosotros te ayudamos con el contenido.</p></div><a href="#galeria" class="btn btn-outline">Ver todas las plantillas →</a></div>
+      <p class="selection-hint" id="selectionHint" aria-live="polite">Seleccionaste: <strong>Clásica moderna</strong>. Tocá otra plantilla para explorarla.</p><div class="template-gallery" id="galeria">
+        <article class="template-card selected" tabindex="0" role="button" aria-pressed="true"><div class="resume resume-light"><div class="resume-top"><div><b>Valentina López</b><small>Desarrolladora Frontend Junior</small></div><span class="avatar">VL</span></div><div class="resume-lines"><i></i><i></i><i></i></div><b>Sobre mí</b><div class="resume-lines"><i></i><i></i></div><b>Experiencia</b><div class="resume-lines"><i></i><i></i><i></i></div></div><span>Clásica moderna</span></article>
+        <article class="template-card" tabindex="0" role="button" aria-pressed="false"><div class="resume resume-dark"><div class="resume-top"><span class="avatar">VL</span><div><b>Valentina López</b><small>Desarrolladora Frontend Junior</small></div></div><div class="resume-lines"><i></i><i></i><i></i></div><b>Sobre mí</b><div class="resume-lines"><i></i><i></i></div><b>Experiencia</b><div class="resume-lines"><i></i><i></i><i></i></div></div><span>Dark tech</span></article>
+        <article class="template-card" tabindex="0" role="button" aria-pressed="false"><div class="resume resume-clean"><div class="resume-top"><span class="avatar">VL</span><div><b>Valentina López</b><small>Desarrolladora Frontend Junior</small></div></div><div class="resume-lines"><i></i><i></i></div><b>Perfil profesional</b><div class="resume-lines"><i></i><i></i><i></i></div><b>Formación</b><div class="resume-lines"><i></i><i></i></div></div><span>Minimalista</span></article>
+        <article class="template-card" tabindex="0" role="button" aria-pressed="false"><div class="resume resume-landscape"><div class="resume-banner"></div><div class="resume-top"><span class="avatar">VL</span><div><b>Valentina López</b><small>Desarrolladora Frontend Junior</small></div></div><b>Experiencia</b><div class="resume-lines"><i></i><i></i><i></i></div><b>Habilidades</b><div class="resume-lines"><i></i><i></i></div></div><span>Creativa</span></article>
+        <article class="template-card" tabindex="0" role="button" aria-pressed="false"><div class="resume resume-soft"><div class="resume-banner"></div><div class="resume-top"><div><b>Valentina López</b><small>Desarrolladora Frontend Junior</small></div><span class="avatar">VL</span></div><b>Sobre mí</b><div class="resume-lines"><i></i><i></i><i></i></div><b>Educación</b><div class="resume-lines"><i></i><i></i></div></div><span>Pastel</span></article>
+        <article class="template-card" tabindex="0" role="button" aria-pressed="false"><div class="resume resume-simple"><div class="resume-top"><span class="avatar">VL</span><div><b>Valentina López</b><small>Desarrolladora Frontend Junior</small></div></div><b>Experiencia</b><div class="resume-lines"><i></i><i></i><i></i></div><b>Habilidades</b><div class="resume-lines"><i></i><i></i></div></div><span>Profesional</span></article>
+      </div>
+    </div></section>
+    <section class="bottom-section container" id="precios"><h2>Tu próximo paso, <span>a tu manera.</span></h2><p>Una experiencia simple para crear un CV que hable de vos.</p><button class="btn btn-gradient btn-large fx-shine" data-demo="start">Empezar ahora →</button></section>
+    <section class="faq container" id="preguntas"><h2>Preguntas frecuentes</h2><details><summary>¿Necesito saber diseñar?</summary><p>No. La idea del producto es guiarte paso a paso y ayudarte a elegir una plantilla.</p></details><details><summary>¿Esta página ya genera CV?</summary><p>No, es un prototipo visual en HTML y CSS. Las funcionalidades reales se implementarán después.</p></details></section>
+  </main>
+  <footer><a href="botonera.html">Explorar botonera animada</a> · iArmatuCV · Prototipo visual v3 · HTML, CSS y JavaScript nativos</footer>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <dialog id="demoDialog" class="demo-dialog" aria-labelledby="demoTitle">
+    <div class="dialog-heading"><span class="dialog-spark">✦</span><button class="dialog-close" id="dialogClose" aria-label="Cerrar">×</button></div>
+    <h2 id="demoTitle">¡Próximamente!</h2>
+    <p id="demoText">Este es un prototipo de diseño. La creación de CV con IA se implementará en una próxima etapa.</p>
+    <button class="btn btn-gradient" id="dialogOk">Entendido</button>
+  </dialog>
+  <svg class="svg-sprite" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+    <symbol id="icon-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2M4.93 4.93l1.42 1.42m11.3 11.3 1.42 1.42M2 12h2m16 0h2M4.93 19.07l1.42-1.42m11.3-11.3 1.42-1.42"/></symbol>
+    <symbol id="icon-moon" viewBox="0 0 24 24"><path d="M20.9 13.1A9 9 0 0 1 10.9 3.1 9 9 0 1 0 20.9 13.1Z"/></symbol>
+    <symbol id="icon-chat" viewBox="0 0 24 24"><path d="M20 11.5a8 8 0 0 1-8 8 8.5 8.5 0 0 1-3.8-.9L4 20l1.4-4.2A8 8 0 1 1 20 11.5Z"/><path d="M8 11.5h8m-8 3h5"/></symbol>
+    <symbol id="icon-zap" viewBox="0 0 24 24"><path d="m13 2-9 12h7l-1 8 10-12h-7z"/></symbol>
+    <symbol id="icon-file" viewBox="0 0 24 24"><path d="M6 2h8l5 5v15H6a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2Z"/><path d="M14 2v6h5M8 12h8m-8 4h8"/></symbol>
+    <symbol id="icon-download" viewBox="0 0 24 24"><path d="M12 3v12m-5-5 5 5 5-5M4 17v4h16v-4"/></symbol>
+  </svg>
+  <script src="interactions.js" defer></script>
+</body>
+</html>

@@ -1,0 +1,15 @@
+<section class="page-section container" aria-labelledby="status-title">
+  <div class="info-card">
+    <p class="section-kicker">CONEXIÓN CON EL SERVIDOR</p><h1 id="status-title">Estado de la aplicación</h1>
+    <p>Esta consulta verifica si la API responde. El guardado de CV y el acceso a cuentas se habilitarán en próximas etapas.</p>
+    <div aria-live="polite" aria-atomic="true" [attr.aria-busy]="state === 'loading'">
+      @if (state === 'loading') { <p class="status-message">Consultando el servidor…</p> }
+      @if (state === 'success' && health) {
+        <p class="status-message success">✓ La API está disponible.</p>
+        <dl class="status-details"><div><dt>Servicio</dt><dd>{{ health.servicio }}</dd></div></dl>
+      }
+      @if (state === 'error') { <p class="status-message error">No pudimos confirmar la conexión con el servidor. Intentá nuevamente en unos momentos.</p> }
+    </div>
+    <button class="btn btn-outline" type="button" (click)="check()" [disabled]="state === 'loading'">{{ state === 'loading' ? 'Consultando…' : 'Volver a consultar' }}</button>
+  </div>
+</section>

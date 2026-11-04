@@ -1,0 +1,16 @@
+<header class="site-header container">
+  <a class="brand" routerLink="/" aria-label="iArmatuCV, inicio"><span class="brand-star" aria-hidden="true">✦</span>iArmatu<span class="brand-cv">CV</span><span class="brand-spark" aria-hidden="true">✦</span></a>
+  <nav class="main-nav" aria-label="Navegación principal">
+    <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="sectionMatch" ariaCurrentWhenActive="page">Inicio</a>
+    <a routerLink="/" fragment="como-funciona" routerLinkActive="active" [routerLinkActiveOptions]="sectionMatch" ariaCurrentWhenActive="location">Cómo funciona</a>
+    <a routerLink="/" fragment="plantillas" routerLinkActive="active" [routerLinkActiveOptions]="sectionMatch" ariaCurrentWhenActive="location">Plantillas</a>
+    <a routerLink="/" fragment="preguntas" routerLinkActive="active" [routerLinkActiveOptions]="sectionMatch" ariaCurrentWhenActive="location">Preguntas</a>
+  </nav>
+  <div class="header-actions">
+    <button class="theme-toggle" type="button" (click)="toggleTheme()" [attr.aria-pressed]="darkMode" [attr.aria-label]="darkMode ? 'Activar modo claro' : 'Activar modo oscuro'">
+      <app-icon [name]="darkMode ? 'sun' : 'moon'" />
+    </button>
+    <a class="btn btn-outline" routerLink="/acceso">Iniciar sesión</a>
+    <a class="btn btn-gradient header-cta fx-shine fx-glow" routerLink="/acceso">Crear mi CV <app-icon name="arrow" /></a>
+  </div>
+</header>
