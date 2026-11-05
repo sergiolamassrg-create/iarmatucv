@@ -9,7 +9,7 @@ export class ApiConfigurationError extends Error {
 export function apiUrl(path: string): string {
   const base = environment.apiBaseUrl.trim().replace(/\/+$/, '');
   if (!base) throw new ApiConfigurationError();
-  if (environment.production) {
+  if (environment.production && !/^\/[A-Za-z0-9_-]+(?:\/[A-Za-z0-9_-]+)*$/.test(base)) {
     let url: URL;
     try { url = new URL(base); }
     catch { throw new ApiConfigurationError(); }
