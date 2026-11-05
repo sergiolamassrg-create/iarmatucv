@@ -31,6 +31,7 @@ Ver [auditoría, preparación AWS y procedimiento propuesto](../docs/Preparacion
 |---|---|
 | `/` | Portada animada, seis diseños seleccionables, vista previa y preguntas |
 | `/acceso` | Ingreso, registro, confirmación, recuperación y sesión con Cognito a través de la API |
+| `/panel` | Espacio personal protegido: bienvenida, cuenta, plantillas y funciones futuras |
 | `/estado` | Consume el healthcheck del backend mediante HttpClient |
 | Otra | Página de recurso no encontrado |
 
@@ -41,6 +42,7 @@ src/app/
   app.config.ts       Router, HttpClient y configuración Angular
   app.routes.ts       Navegación SPA
   app.component.ts    Layout compartido
+  core/guards/        Guarda de sesi?n para el panel
   core/models/        Interfaces TypeScript del contrato HTTP
   core/services/      Servicio de comunicación con la API
   shared/             Header, footer, iconos SVG y vista de CV reutilizable

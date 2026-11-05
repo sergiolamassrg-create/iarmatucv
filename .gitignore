@@ -9,3 +9,5 @@
 .DS_Store
 .verificacion-browser/
 docs/evidencias/
+**/.lambda-package.*/
+**/iarmatucv-lambda-*.zip

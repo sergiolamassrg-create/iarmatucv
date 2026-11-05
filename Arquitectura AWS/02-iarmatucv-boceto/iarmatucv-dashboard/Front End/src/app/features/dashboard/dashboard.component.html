@@ -1,0 +1,99 @@
+<div class="dashboard-layout">
+  <button class="dashboard-mobile-menu" type="button" (click)="toggleMenu()" [attr.aria-expanded]="menuOpen" aria-controls="dashboard-sidebar" aria-label="Abrir o cerrar el menú">☰ Menú</button>
+  @if (menuOpen) {
+    <button class="dashboard-backdrop" type="button" aria-label="Cerrar menú" (click)="closeMenu()"></button>
+  }
+
+  <aside id="dashboard-sidebar" class="dashboard-sidebar" [class.is-open]="menuOpen" aria-label="Navegación de tu cuenta">
+    <a routerLink="/panel" class="dashboard-logo" (click)="closeMenu()">
+      <span aria-hidden="true">✦</span> iArmatu<span>CV</span><sup aria-hidden="true">✦</sup>
+    </a>
+    <nav class="dashboard-nav" aria-label="Menú principal">
+      <a class="dashboard-nav-item is-active" routerLink="/panel" (click)="closeMenu()" aria-current="page"><app-icon name="spark" /> Inicio</a>
+      <a class="dashboard-nav-item" routerLink="/panel" fragment="mis-cv" (click)="closeMenu()"><app-icon name="file" /> Mis CV</a>
+      <a class="dashboard-nav-item" routerLink="/" fragment="plantillas" (click)="closeMenu()"><span class="dashboard-nav-symbol" aria-hidden="true">▱</span> Plantillas</a>
+      <span class="dashboard-nav-item is-unavailable" aria-disabled="true"><app-icon name="spark" /> Asistente IA <small>Próximamente</small></span>
+      <a class="dashboard-nav-item" routerLink="/panel" fragment="consejos" (click)="closeMenu()"><span class="dashboard-nav-symbol" aria-hidden="true">▥</span> Consejos</a>
+      <a class="dashboard-nav-item" routerLink="/acceso" (click)="closeMenu()"><span class="dashboard-nav-symbol" aria-hidden="true">⚙</span> Mi cuenta</a>
+    </nav>
+    <div class="dashboard-sidebar-bottom">
+      <div class="dashboard-sidebar-promo">
+        <span class="dashboard-robot" aria-hidden="true">✦</span>
+        <strong>Tu próximo paso comienza acá</strong>
+        <p>Elegí un diseño que represente tu historia.</p>
+        <a routerLink="/" fragment="plantillas" class="dashboard-promo-button" (click)="closeMenu()">Explorar diseños <app-icon name="arrow" /></a>
+      </div>
+      <button class="dashboard-exit" type="button" [disabled]="loggingOut" (click)="logout()">{{ loggingOut ? 'Cerrando sesión…' : 'Cerrar sesión' }}</button>
+    </div>
+  </aside>
+
+  <div class="dashboard-main-area">
+    <header class="dashboard-topbar">
+      <span class="dashboard-context">Tu espacio personal</span>
+      <div class="dashboard-top-actions">
+        <button class="dashboard-theme" type="button" (click)="toggleTheme()" [attr.aria-label]="darkMode ? 'Activar modo claro' : 'Activar modo oscuro'" [attr.aria-pressed]="darkMode"><app-icon [name]="darkMode ? 'sun' : 'moon'" /></button>
+        <span class="dashboard-avatar" aria-hidden="true">{{ initials }}</span>
+        <div class="dashboard-account"><strong>{{ displayName }}</strong><small>Mi cuenta</small></div>
+      </div>
+    </header>
+
+    <div class="dashboard-content">
+      <div class="dashboard-welcome">
+        <h1>¡Hola, {{ displayName }}! <span aria-hidden="true">👋</span></h1>
+        <p>Bienvenido a <strong>iArmatuCV</strong>. Creá, editá y mejorá tu currículum a tu ritmo.</p>
+      </div>
+      @if (logoutError) { <p class="dashboard-error" role="alert">{{ logoutError }}</p> }
+
+      <div class="dashboard-lead-grid">
+        <section class="dashboard-hero" aria-label="Tu próximo CV">
+          <div class="dashboard-hero-text">
+            <span class="dashboard-hero-eyebrow">✦ TU FUTURO COMIENZA ACÁ</span>
+            <h2>Tu CV, un paso más cerca de tu próximo trabajo.</h2>
+            <p>Explorá diseños profesionales y preparate para construir tu currículum.</p>
+            <a class="dashboard-hero-button" routerLink="/" fragment="plantillas">Explorar plantillas <app-icon name="arrow" /></a>
+          </div>
+          <div class="dashboard-hero-art" aria-hidden="true"><img src="/assets/hero-reference.png" alt="" /></div>
+        </section>
+
+        <section class="dashboard-card dashboard-progress" aria-labelledby="progress-title">
+          <h2 id="progress-title">Tu progreso</h2>
+          <div class="dashboard-progress-body">
+            <div class="dashboard-step-icon" aria-hidden="true">✦</div>
+            <ol class="dashboard-steps">
+              <li class="is-done"><span>✓</span> Cuenta creada</li>
+              <li class="is-pending"><span>2</span> Crear tu primer CV <small>Próximamente</small></li>
+              <li class="is-pending"><span>3</span> Descargar tu CV <small>Próximamente</small></li>
+            </ol>
+          </div>
+          <p class="dashboard-small-note">Mostramos pasos reales, no un porcentaje estimado.</p>
+        </section>
+      </div>
+
+      <section class="dashboard-actions" aria-label="Accesos rápidos">
+        <div class="dashboard-action is-disabled"><span class="dashboard-action-icon lilac"><app-icon name="file" /></span><div><strong>Crear CV</strong><small>Disponible en una próxima etapa</small></div><span class="dashboard-action-arrow">·</span></div>
+        <a class="dashboard-action" routerLink="/" fragment="plantillas"><span class="dashboard-action-icon sky"><span aria-hidden="true">▱</span></span><div><strong>Usar plantilla</strong><small>Elegí un diseño profesional</small></div><app-icon name="chevron" /></a>
+        <div class="dashboard-action is-disabled"><span class="dashboard-action-icon rose"><app-icon name="spark" /></span><div><strong>Mejorar con IA</strong><small>Disponible próximamente</small></div><span class="dashboard-action-arrow">·</span></div>
+        <div class="dashboard-action is-disabled"><span class="dashboard-action-icon amber"><span aria-hidden="true">↓</span></span><div><strong>Descargar CV</strong><small>Se habilitará con tus CV</small></div><span class="dashboard-action-arrow">·</span></div>
+      </section>
+
+      <div class="dashboard-bottom-grid">
+        <section id="mis-cv" class="dashboard-card dashboard-my-cvs" aria-labelledby="my-cv-title">
+          <div class="dashboard-section-heading"><h2 id="my-cv-title">Mis últimos CV</h2><span class="dashboard-pending-badge">En desarrollo</span></div>
+          <div class="dashboard-empty-state">
+            <span class="dashboard-empty-icon"><app-icon name="file" /></span>
+            <h3>Acá vas a encontrar tus currículums</h3>
+            <p>Cuando se implemente la creación y el guardado de CV, podrás consultar y editar tus documentos desde este espacio.</p>
+            <a routerLink="/" fragment="plantillas" class="dashboard-text-link">Mientras tanto, explorá las plantillas <app-icon name="arrow" /></a>
+          </div>
+        </section>
+        <section id="consejos" class="dashboard-card dashboard-suggestions" aria-labelledby="suggestions-title">
+          <div class="dashboard-section-heading"><h2 id="suggestions-title">✦ Consejos para vos</h2></div>
+          <div class="dashboard-tip"><span class="dashboard-tip-icon amber">✦</span><div><strong>Destacá tus habilidades</strong><p>Contá qué sabés hacer y cómo lo aplicaste.</p></div></div>
+          <div class="dashboard-tip"><span class="dashboard-tip-icon lilac">▱</span><div><strong>Elegí una plantilla clara</strong><p>Facilitá la lectura de tu experiencia.</p></div></div>
+          <div class="dashboard-tip"><span class="dashboard-tip-icon mint">✓</span><div><strong>Revisá tus datos de contacto</strong><p>Usá un correo actualizado y profesional.</p></div></div>
+          <p class="dashboard-small-note">Consejos generales. Las recomendaciones personalizadas con IA todavía no están disponibles.</p>
+        </section>
+      </div>
+    </div>
+  </div>
+</div>

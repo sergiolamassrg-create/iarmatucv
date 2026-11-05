@@ -2,7 +2,7 @@
 
 Aplicación en desarrollo con frontend Angular y API Express separados.
 
-Angular ya separa desarrollo y producción. El build destinado a AWS deja la API pendiente sin URL local ni endpoint inventado; la conexión serverless y la publicación siguen pendientes. Ver [auditoría y preparación para AWS](docs/Preparacion-AWS.md).
+Angular separa desarrollo y producción; la URL de API publicada sigue pendiente. El backend conserva Express y ahora incluye handler Lambda Node.js para HTTP API v2 con autenticación JWT sin MemoryStore. La adaptación está verificada localmente, sin despliegue. Ver [preparación Angular](docs/Preparacion-AWS.md) y [Lambda Node](docs/Lambda-Node.md).
 
 Versiones de desarrollo: Angular 22 con TypeScript 6.0 en frontend; Express 5 con TypeScript 7 en backend. Ambos usan Node 24.22.1. Las versiones exactas se conservan en el `package-lock.json` de cada proyecto.
 
@@ -61,6 +61,8 @@ Implementado: portada Angular basada en el boceto original con ilustración, fue
 
 Se integraron los formularios de acceso con Cognito a través del backend Express existente: registro, confirmación, ingreso, recuperación, nueva contraseña y sesión con cookie HttpOnly. Completar el Client Secret del app client en `Back End/.env` si corresponde y revisar [la configuración de Cognito](docs/Cognito.md). La prueba con una cuenta real requiere esa configuración; no se crearon cuentas de prueba en AWS.
 
+El ingreso abre el [panel personal responsive](docs/Dashboard.md), con datos de la cuenta, navegaci?n y temas compartidos. La creaci?n y descarga de CV se muestran como pr?ximas funciones.
+
 Pendiente: CRUD de CV, persistencia, autorización por propietario y despliegue. No se guardan CV ni se simulan cuentas. Las rutas de CV se incorporarán al implementar sus operaciones. Un healthcheck correcto **solo indica que la API responde**.
 
 No se implementan IA, generación PDF ni Google federado. No se crearon ni desplegaron recursos AWS durante estos cambios.
@@ -71,4 +73,4 @@ No se implementan IA, generación PDF ni Google federado. No se crearon ni despl
 - [Frontend](Front%20End/README.md).
 - [Backend](Back%20End/README.md).
 
-La separación acordada entre entregas contempla Express/TypeScript con MongoDB para Backend y Python/Lambda con DynamoDB para Nube. Esta copia todavía ejecuta Express; integrar Cognito no la convierte en un backend Lambda. La adaptación de ejecución y sesiones para AWS queda pendiente. Los originales de `Arquitectura AWS` se mantienen intactos.
+La decisión vigente conserva Express/TypeScript también en Lambda Node.js, sin migración a Python. La base de datos queda pendiente según la entrega; no se implementó DynamoDB ni CRUD en esta etapa. El acceso local mantiene su modo de sesiones y Lambda utiliza JWT en cookies HttpOnly. Los originales de `Arquitectura AWS` se conservan como documentación histórica.

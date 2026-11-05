@@ -23,7 +23,7 @@ Dependencias HTTP actuales, todas bajo `/api/v1`:
 
 - `GET /health`: `{data: {estado: 'ok', servicio: string}}`.
 - `GET /plantillas`: `{data: [{slug, name, description, label}]}`.
-- `GET /auth/sesion`: `{data: usuario | null}`; el usuario incluye `id`, `username`, `email`, `emailVerified`.
+- `GET /auth/sesion`: `{data: usuario | null}`; el usuario incluye `id`, `username`, `nickname`, `email`, `emailVerified`.
 - `POST /auth/registro`: `name`, `familyName`, `nickname`, `email`, `password`; devuelve `{data: {confirmed: boolean}}`.
 - `POST /auth/confirmacion`: `email`, `code`.
 - `POST /auth/reenviar-codigo`: `email`.
@@ -77,7 +77,7 @@ Según lo informado, el bucket es `iarmatucv-pp3-2026`, en `us-east-1`, con bloq
 
 Si el laboratorio permite CloudFront y configurar su acceso al bucket, proponer origen S3 REST privado con OAC y HTTPS para visitantes. No usar el endpoint S3 Website como origen privado con OAC. Sin CloudFront u otra alternativa HTTPS privada autorizada, la publicación queda pendiente: no desactivar el bloqueo ni publicar un login por HTTP para resolverlo.
 
-Angular necesita que el alojamiento entregue el `index.html` raíz al abrir o recargar `/acceso` y `/estado`. El router no configura S3 o CloudFront automáticamente. Proponer una reescritura de esas rutas al `index.html` raíz, asociada al comportamiento estático, conservando query strings y sin reescribir `/api/*` ni archivos de `assets/`. El objeto raíz predeterminado por sí solo no resuelve esas rutas. Evitar convertir indiscriminadamente errores de la API en HTML con estado 200.
+Angular necesita que el alojamiento entregue el `index.html` raíz al abrir o recargar `/acceso`, `/estado` y `/panel`. El router no configura S3 o CloudFront automáticamente. Proponer una reescritura de esas rutas al `index.html` raíz, asociada al comportamiento estático, conservando query strings y sin reescribir `/api/*` ni archivos de `assets/`. El objeto raíz predeterminado por sí solo no resuelve esas rutas. Evitar convertir indiscriminadamente errores de la API en HTML con estado 200.
 
 Los ejemplos de CloudFront que agregan `/index.html` a cada ruta deben adaptarse a esta SPA: no hay un archivo `/acceso/index.html`, sino un único `/index.html`. La vista previa estática local de esta intervención simula esa reescritura; no configura CloudFront.
 

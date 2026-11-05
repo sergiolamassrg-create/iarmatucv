@@ -11,7 +11,7 @@
       <app-icon [name]="darkMode ? 'sun' : 'moon'" />
     </button>
     @if (auth.user) {
-      <a class="btn btn-gradient header-cta fx-shine fx-glow" routerLink="/acceso">Mi cuenta <app-icon name="arrow" /></a>
+      <a class="btn btn-gradient header-cta fx-shine fx-glow" routerLink="/panel">Mi espacio <app-icon name="arrow" /></a>
     } @else {
       <a class="btn btn-outline" routerLink="/acceso">Iniciar sesión</a>
       <a class="btn btn-gradient header-cta fx-shine fx-glow" routerLink="/acceso">Crear mi CV <app-icon name="arrow" /></a>

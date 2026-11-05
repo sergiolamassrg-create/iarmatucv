@@ -22,10 +22,12 @@ test('local login, session rotation, reload and logout remain functional', async
     const login = await request('/auth/ingreso', { body: credentials });
     assert.equal(login.response.status, 200);
     assert.equal(login.data.data.id, 'user-a');
+    assert.equal(login.data.data.nickname, 'Persona');
     assert(!JSON.stringify(login.data).includes('accessToken'));
     assert(login.cookies[0].startsWith('iarmatucv.sid='));
     assert(login.cookies[0].includes('HttpOnly'));
     const cookie = cookieHeader(login.cookies);
+    assert.equal((await request('/auth/sesion', { headers: { Cookie: cookie } })).data.data.nickname, 'Persona');
     assert.equal((await request('/auth/perfil', { headers: { Cookie: cookie } })).data.data.id, 'user-a');
     const rotated = await request('/auth/ingreso', { body: credentials, headers: { Cookie: cookie } });
     assert.notEqual(cookieHeader(rotated.cookies), cookie);
@@ -88,12 +90,27 @@ test('JWT cookies preserve the Angular contract and valid Bearer tokens are acce
     assert(login.cookies.every(cookie => cookie.includes('Path=/api/v1')));
     assert(!login.cookies.some(cookie => cookie.startsWith('iarmatucv.sid=')));
     const saved = cookieHeader(login.cookies);
+    assert.equal(login.data.data.nickname, 'Persona');
+    assert.equal((await request('/auth/sesion', { headers: { Cookie: saved } })).data.data.nickname, 'Persona');
     assert.equal((await request('/auth/sesion', { headers: { Cookie: saved } })).data.data.id, 'user-a');
     assert.equal((await request('/auth/perfil', { headers: { Authorization: `Bearer ${token()}` } })).data.data.id, 'user-a');
     state.revoked = true;
     assert.equal((await request('/auth/perfil', { headers: { Cookie: saved } })).response.status, 401);
   });
   } finally { environment.sessionSecret = previousSecret; }
+});
+
+test('accounts without a Cognito nickname can still log in', async () => {
+  state.nickname = undefined;
+  for (const mode of ['session', 'jwt']) {
+    await serve(createApp({ mode, verifyAccessToken: verify }), async request => {
+      const login = await request('/auth/ingreso', { body: credentials });
+      assert.equal(login.response.status, 200);
+      assert.equal(login.data.data.nickname, '');
+      const session = await request('/auth/sesion', { headers: { Cookie: cookieHeader(login.cookies) } });
+      assert.equal(session.data.data.nickname, '');
+    });
+  }
 });
 
 test('JWT verification fails closed when configuration is missing or JWKS cannot be fetched', async () => {

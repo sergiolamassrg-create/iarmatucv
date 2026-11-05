@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, DestroyRef, ElementRef, ViewChild, inject } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule, NgForm } from '@angular/forms';
-import { RouterLink } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { firstValueFrom } from 'rxjs';
 import { AuthService } from '../../core/services/auth.service';
 
@@ -31,7 +31,9 @@ export class AccessComponent {
   busy = false;
   private readonly destroyRef = inject(DestroyRef);
 
-  constructor(readonly auth: AuthService) {}
+  constructor(readonly auth: AuthService, private readonly router: Router) {
+    this.message = this.auth.takeLogoutNotice();
+  }
 
   changeMode(mode: AccessMode, form: NgForm): void {
     if (this.busy) return;
@@ -64,6 +66,8 @@ export class AccessComponent {
       switch (this.mode) {
         case 'login':
           await firstValueFrom(this.auth.login(this.email, this.password).pipe(takeUntilDestroyed(this.destroyRef)));
+          this.resetFields(form);
+          if (!this.destroyRef.destroyed) await this.router.navigateByUrl('/panel', { replaceUrl: true });
           break;
         case 'register': {
           const response = await firstValueFrom(this.auth.register(this.email, this.password, {
@@ -136,10 +140,10 @@ export class AccessComponent {
     this.error = '';
     this.message = '';
     try {
-      const response = await firstValueFrom(this.auth.logout().pipe(takeUntilDestroyed(this.destroyRef)));
+      await firstValueFrom(this.auth.logout().pipe(takeUntilDestroyed(this.destroyRef)));
       this.mode = 'login';
       this.email = '';
-      this.message = response.data.message;
+      this.message = this.auth.takeLogoutNotice();
     } catch (error) {
       if (!this.destroyRef.destroyed) this.error = this.auth.errorMessage(error);
     } finally { this.busy = false; }

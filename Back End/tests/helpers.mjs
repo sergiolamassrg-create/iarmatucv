@@ -39,10 +39,11 @@ export function token(changes = {}, options = {}) {
 
 export const profile = { name: 'Persona Ejemplo', familyName: 'Ejemplo', nickname: 'Persona' };
 export const credentials = { email: 'test@example.com', password: 'Example123!', ...profile };
-export const state = { challenge: false, revoked: false, calls: [], loginToken: undefined, failure: undefined };
+export const state = { challenge: false, revoked: false, calls: [], loginToken: undefined, failure: undefined, nickname: profile.nickname };
 
 export function resetMock() {
   state.challenge = false; state.revoked = false; state.calls = []; state.loginToken = undefined; state.failure = undefined;
+  state.nickname = profile.nickname;
 }
 
 cognitoClient.send = async command => {
@@ -65,7 +66,8 @@ cognitoClient.send = async command => {
     if (state.revoked) throw Object.assign(new Error('Revoked'), { name: 'NotAuthorizedException' });
     const payload = JSON.parse(Buffer.from(input.AccessToken.split('.')[1], 'base64url').toString());
     return { Username: 'test-user', UserAttributes: [
-      { Name: 'sub', Value: payload.sub }, { Name: 'email', Value: 'test@example.com' }, { Name: 'email_verified', Value: 'true' }
+      { Name: 'sub', Value: payload.sub }, { Name: 'email', Value: 'test@example.com' }, { Name: 'email_verified', Value: 'true' },
+      ...(state.nickname === undefined ? [] : [{ Name: 'nickname', Value: state.nickname }])
     ] };
   }
   if (name === 'SignUpCommand') return { UserConfirmed: false };

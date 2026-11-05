@@ -77,6 +77,7 @@ export async function currentUser(accessToken: string): Promise<AuthUser> {
   if (!attributes['sub']) throw new AuthError(401, 'SESION_INVALIDA', 'La sesión no es válida. Volvé a ingresar.');
   return {
     id: attributes['sub'], username: result.Username ?? '',
+    nickname: attributes['nickname'] ?? '',
     email: attributes['email'] ?? '', emailVerified: attributes['email_verified'] === 'true'
   };
 }

@@ -1,0 +1,117 @@
+<ng-template #navigation>
+  <nav class="dashboard-nav" aria-label="Navegación de tu cuenta">
+    <a class="dashboard-nav-item is-active" routerLink="/panel" (click)="closeMenu()" aria-current="page"><app-icon name="grid" /> Inicio</a>
+    <a class="dashboard-nav-item" routerLink="/panel" fragment="mis-cv" (click)="closeMenu()"><app-icon name="file" /> Mis CV</a>
+    <a class="dashboard-nav-item" routerLink="/" fragment="plantillas" (click)="closeMenu()"><app-icon name="eye" /> Plantillas</a>
+    <span class="dashboard-nav-item is-unavailable" aria-disabled="true"><app-icon name="spark" /> Asistente IA <small>Próximamente</small></span>
+    <a class="dashboard-nav-item" routerLink="/panel" fragment="consejos" (click)="closeMenu()"><app-icon name="chat" /> Consejos</a>
+    <a class="dashboard-nav-item" routerLink="/panel" fragment="mi-cuenta" (click)="closeMenu()"><app-icon name="user" /> Mi cuenta</a>
+    <a class="dashboard-nav-item" routerLink="/" (click)="closeMenu()"><app-icon name="arrow" /> Volver al sitio</a>
+  </nav>
+  <div class="dashboard-sidebar-bottom">
+    <div class="dashboard-sidebar-promo">
+      <span class="dashboard-robot" aria-hidden="true">✦</span>
+      <strong>Tu próximo paso comienza acá</strong>
+      <p>Elegí un diseño que represente tu historia.</p>
+      <a routerLink="/" fragment="plantillas" class="dashboard-promo-button fx-shine" (click)="closeMenu()">Explorar diseños <app-icon name="arrow" /></a>
+    </div>
+    @if (logoutError) { <p class="dashboard-error" role="alert">{{ logoutError }}</p> }
+    <button class="dashboard-exit" type="button" [disabled]="loggingOut" (click)="logout()"><app-icon name="logout" /> {{ loggingOut ? 'Cerrando sesión…' : 'Cerrar sesión' }}</button>
+  </div>
+</ng-template>
+
+<div class="dashboard-layout">
+  <aside class="dashboard-sidebar" aria-label="Menú de tu espacio">
+    <a routerLink="/panel" class="dashboard-logo" aria-label="iArmatuCV, mi espacio"><span aria-hidden="true">✦</span> iArmatu<span>CV</span><sup aria-hidden="true">✦</sup></a>
+    <ng-container [ngTemplateOutlet]="navigation" />
+  </aside>
+
+  <div class="dashboard-main-area">
+    <header class="dashboard-topbar">
+      <div class="dashboard-top-leading">
+        <button #menuButton class="dashboard-mobile-menu" type="button" (click)="openMenu()" [attr.aria-expanded]="menuOpen" aria-controls="dashboard-menu" aria-label="Abrir menú de mi espacio"><app-icon name="menu" /></button>
+        <a class="dashboard-mobile-brand" routerLink="/panel" aria-label="iArmatuCV, mi espacio">iArmatu<span class="gradient-text">CV</span></a>
+        <span class="dashboard-context">Tu espacio personal</span>
+      </div>
+      <div class="dashboard-top-actions">
+        <button class="dashboard-theme" type="button" (click)="theme.toggle()" [attr.aria-label]="theme.darkMode ? 'Activar modo claro' : 'Activar modo oscuro'" [attr.aria-pressed]="theme.darkMode"><app-icon [name]="theme.darkMode ? 'sun' : 'moon'" /></button>
+        <a class="dashboard-user-link" routerLink="/panel" fragment="mi-cuenta" aria-label="Ver mi cuenta">
+          <span class="dashboard-avatar" aria-hidden="true">{{ initials }}</span>
+          <span class="dashboard-account"><strong>{{ displayName || 'Mi cuenta' }}</strong><small>Mi cuenta</small></span>
+        </a>
+      </div>
+    </header>
+
+    <div class="dashboard-content">
+      <div class="dashboard-welcome">
+        <p class="dashboard-eyebrow">UN NUEVO CAPÍTULO EMPIEZA ACÁ</p>
+        <h1>{{ greeting }} <span aria-hidden="true">👋</span></h1>
+        <p>Este es tu espacio en <strong>iArmatuCV</strong>. Dale forma a tu próximo paso, a tu ritmo.</p>
+      </div>
+
+      <div class="dashboard-lead-grid">
+        <section class="dashboard-hero" aria-labelledby="dashboard-hero-title">
+          <div class="dashboard-hero-text">
+            <span class="dashboard-hero-eyebrow">✦ TU HISTORIA MERECE DESTACARSE</span>
+            <h2 id="dashboard-hero-title">Tu próximo trabajo empieza con tu historia.</h2>
+            <p>Explorá los diseños y encontrá el que mejor te representa.</p>
+            <a class="dashboard-hero-button" routerLink="/" fragment="plantillas">Explorar plantillas <app-icon name="arrow" /></a>
+          </div>
+          <div class="dashboard-hero-art" aria-hidden="true"><img src="/assets/hero-reference.png" alt="" /></div>
+        </section>
+
+        <section class="dashboard-card dashboard-progress" aria-labelledby="progress-title">
+          <h2 id="progress-title">Tu recorrido</h2>
+          <div class="dashboard-progress-body">
+            <div class="dashboard-step-icon" aria-hidden="true"><app-icon name="check" /></div>
+            <ol class="dashboard-steps">
+              <li class="is-done"><span aria-hidden="true">✓</span> Cuenta conectada</li>
+              <li class="is-pending"><span aria-hidden="true">2</span> Crear tu primer CV <small>Próximamente</small></li>
+              <li class="is-pending"><span aria-hidden="true">3</span> Descargar tu CV <small>Próximamente</small></li>
+            </ol>
+          </div>
+          <p class="dashboard-small-note">Ya diste el primer paso. Estamos preparando el editor para lo que viene.</p>
+        </section>
+      </div>
+
+      <section class="dashboard-actions" aria-label="Accesos rápidos">
+        <button type="button" class="dashboard-action" disabled><span class="dashboard-action-icon lilac"><app-icon name="file" /></span><span class="dashboard-action-copy"><strong>Crear CV</strong><small>Próximamente</small></span></button>
+        <a class="dashboard-action" routerLink="/" fragment="plantillas"><span class="dashboard-action-icon sky"><app-icon name="eye" /></span><span class="dashboard-action-copy"><strong>Explorar plantillas</strong><small>Encontrá tu estilo</small></span><app-icon name="chevron" /></a>
+        <button type="button" class="dashboard-action" disabled><span class="dashboard-action-icon rose"><app-icon name="spark" /></span><span class="dashboard-action-copy"><strong>Mejorar con IA</strong><small>Próximamente</small></span></button>
+        <button type="button" class="dashboard-action" disabled><span class="dashboard-action-icon amber"><app-icon name="arrow" /></span><span class="dashboard-action-copy"><strong>Descargar CV</strong><small>Se habilitará con tus CV</small></span></button>
+      </section>
+
+      <div class="dashboard-bottom-grid">
+        <section id="mis-cv" class="dashboard-card dashboard-my-cvs" aria-labelledby="my-cv-title">
+          <div class="dashboard-section-heading"><h2 id="my-cv-title">Mis CV</h2><span class="dashboard-pending-badge">Próximamente</span></div>
+          <div class="dashboard-empty-state">
+            <span class="dashboard-empty-icon" aria-hidden="true"><app-icon name="file" /></span>
+            <h3>Un espacio para tus próximos CV</h3>
+            <p>Acá vas a encontrar tus currículums. Estamos preparando el editor para que puedas crear y guardar el primero.</p>
+            <a routerLink="/" fragment="plantillas" class="dashboard-text-link">Conocé los diseños <app-icon name="arrow" /></a>
+          </div>
+        </section>
+        <section id="consejos" class="dashboard-card dashboard-suggestions" aria-labelledby="suggestions-title">
+          <div class="dashboard-section-heading"><h2 id="suggestions-title">Consejos para empezar</h2></div>
+          <div class="dashboard-tip"><span class="dashboard-tip-icon amber" aria-hidden="true"><app-icon name="spark" /></span><div><strong>Destacá tus habilidades</strong><p>Contá qué sabés hacer y cómo lo aplicaste.</p></div></div>
+          <div class="dashboard-tip"><span class="dashboard-tip-icon lilac" aria-hidden="true"><app-icon name="eye" /></span><div><strong>Elegí una plantilla clara</strong><p>Facilitá la lectura de tu experiencia.</p></div></div>
+          <div class="dashboard-tip"><span class="dashboard-tip-icon mint" aria-hidden="true"><app-icon name="check" /></span><div><strong>Revisá tus datos de contacto</strong><p>Usá un correo actualizado y profesional.</p></div></div>
+        </section>
+      </div>
+
+      <section id="mi-cuenta" class="dashboard-card dashboard-profile" aria-labelledby="account-title">
+        <div><p class="dashboard-eyebrow">TU CUENTA</p><h2 id="account-title">Tu lugar en iArmatuCV</h2></div>
+        <dl class="dashboard-profile-details"><div><dt>Correo electrónico</dt><dd>{{ auth.user?.email || 'Sin correo disponible' }}</dd></div><div><dt>Estado del correo</dt><dd><span class="dashboard-account-status" [class.is-verified]="auth.user?.emailVerified">{{ auth.user?.emailVerified ? 'Verificado' : 'Sin verificar' }}</span></dd></div></dl>
+      </section>
+      <footer class="dashboard-footer"><span>Tu historia merece un buen comienzo.</span><a routerLink="/">Volver al sitio <app-icon name="arrow" /></a></footer>
+    </div>
+  </div>
+</div>
+
+<dialog #mobileMenu id="dashboard-menu" class="dashboard-menu-dialog" aria-labelledby="dashboard-menu-title" (close)="onMenuClosed()" (click)="closeOnBackdrop($event)">
+  <div class="dashboard-menu-heading">
+    <h2 id="dashboard-menu-title" class="dashboard-logo">iArmatu<span>CV</span></h2>
+    <button class="dashboard-menu-close" type="button" (click)="closeMenu()" aria-label="Cerrar menú" autofocus><app-icon name="close" /></button>
+  </div>
+  <ng-container [ngTemplateOutlet]="navigation" />
+</dialog>
