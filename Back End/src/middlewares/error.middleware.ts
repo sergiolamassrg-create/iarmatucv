@@ -1,6 +1,12 @@
 import type { ErrorRequestHandler } from 'express';
+import { cognitoError } from '../services/auth-error.js';
 
 export const errorHandler: ErrorRequestHandler = (error: unknown, _req, res, _next) => {
+  const authError = cognitoError(error);
+  if (authError) {
+    res.status(authError.status).json({ error: { codigo: authError.code, mensaje: authError.message } });
+    return;
+  }
   const type = error && typeof error === 'object' && 'type' in error ? error.type : '';
 
   if (type === 'entity.parse.failed') {

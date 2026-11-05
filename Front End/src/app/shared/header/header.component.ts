@@ -1,12 +1,14 @@
 import { Component, ChangeDetectionStrategy } from '@angular/core';
-import { RouterLink, RouterLinkActive } from '@angular/router';
+import { Router, RouterLink, RouterLinkActive } from '@angular/router';
 import { UiIconComponent } from '../ui-icon/ui-icon.component';
+import { AuthService } from '../../core/services/auth.service';
 
 @Component({
   selector: 'app-header',
   imports: [RouterLink, RouterLinkActive, UiIconComponent],
   changeDetection: ChangeDetectionStrategy.Eager,
-  templateUrl: './header.component.html'
+  templateUrl: './header.component.html',
+  styleUrl: './header.component.css'
 })
 export class HeaderComponent {
   darkMode = false;
@@ -14,12 +16,16 @@ export class HeaderComponent {
     paths: 'exact', queryParams: 'ignored', matrixParams: 'ignored', fragment: 'exact'
   } as const;
 
-  constructor() {
+  constructor(private readonly router: Router, readonly auth: AuthService) {
     try {
       this.darkMode = localStorage.getItem('iarmatucv-tema') === 'oscuro';
     } catch {
     }
     this.applyTheme();
+  }
+
+  get isAccessPage(): boolean {
+    return this.router.url.split(/[?#]/, 1)[0] === '/acceso';
   }
 
   toggleTheme(): void {

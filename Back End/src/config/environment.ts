@@ -12,5 +12,12 @@ export const environment = {
     'http://localhost:4200,http://127.0.0.1:4200')
     .split(',')
     .map((origin) => origin.trim())
-    .filter(Boolean)
+    .filter(Boolean),
+  cognito: {
+    region: process.env['COGNITO_REGION'] ?? 'us-east-1',
+    clientId: process.env['COGNITO_CLIENT_ID'] ?? '',
+    clientSecret: process.env['COGNITO_CLIENT_SECRET'] ?? ''
+  },
+  sessionSecret: process.env['SESSION_SECRET'] ?? '',
+  production: process.env['NODE_ENV'] === 'production'
 };

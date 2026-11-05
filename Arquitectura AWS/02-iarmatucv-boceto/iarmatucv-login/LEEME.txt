@@ -1,0 +1,15 @@
+iArmatuCV - Etapa 1: pantalla de acceso (solo interfaz)
+
+Copiar los tres archivos dentro de:
+Front End/src/app/features/access/
+
+Reemplazar access.component.ts y agregar access.component.html y access.component.css.
+
+No se modifican rutas ni estilos globales. Se reutilizan los colores, fuentes y la imagen /assets/hero-reference.png ya existentes.
+
+Desde la carpeta principal del proyecto ejecutar:
+npm.cmd run frontend:dev
+
+Abrir http://127.0.0.1:4200/acceso
+
+IMPORTANTE: Los formularios son una maqueta navegable. No realizan autenticacion, no crean cuentas, no almacenan credenciales ni generan JWT. Cognito se integra en la siguiente etapa, una vez configurado el User Pool.

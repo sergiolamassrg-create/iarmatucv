@@ -1,0 +1,88 @@
+<section class="access-layout container" aria-labelledby="access-title">
+  <div class="access-intro">
+    <span class="access-pill">✦ Accedé a tu cuenta</span>
+    <h1 id="access-title">Creá, gestioná y mejorá tu CV <span class="gradient-text">con IA</span></h1>
+    <p class="access-description">Tu próximo paso empieza acá. Prepará tu perfil, explorá diseños y guardá tus avances cuando habilitemos tu cuenta.</p>
+    <ul class="access-benefits">
+      <li>Guardá y editá tus currículums</li>
+      <li>Usá plantillas profesionales</li>
+      <li>Recibí mejoras con IA en próximas etapas</li>
+      <li>Accedé desde cualquier dispositivo</li>
+    </ul>
+    <div class="access-illustration" aria-hidden="true">
+      <div class="access-glow"></div>
+      <img src="/assets/hero-reference.png" alt="" />
+    </div>
+  </div>
+
+  <div class="access-panel">
+    <div class="access-tabs" role="group" aria-label="Tipo de acceso">
+      <button type="button" [class.selected]="mode === 'login' || mode === 'recover'" (click)="changeMode('login')">Iniciar sesión</button>
+      <button type="button" [class.selected]="mode === 'register' || mode === 'confirm'" (click)="changeMode('register')">Crear cuenta</button>
+    </div>
+
+    @switch (mode) {
+      @case ('login') {
+        <h2>Iniciar sesión en <span class="gradient-text">iArmatuCV</span></h2>
+        <p class="panel-subtitle">Accedé a tu cuenta y continuá con tu próxima oportunidad.</p>
+      }
+      @case ('register') {
+        <h2>Creá tu cuenta</h2>
+        <p class="panel-subtitle">Un espacio para construir tu próximo paso profesional.</p>
+      }
+      @case ('confirm') {
+        <h2>Confirmá tu correo</h2>
+        <p class="panel-subtitle">Ingresá el código que recibirás por correo cuando Cognito esté conectado.</p>
+      }
+      @case ('recover') {
+        <h2>Recuperar contraseña</h2>
+        <p class="panel-subtitle">Te enviaremos un código para recuperar el acceso cuando Cognito esté conectado.</p>
+      }
+    }
+
+    <form class="access-form" (ngSubmit)="submit()">
+      <label for="access-email">Correo electrónico</label>
+      <input id="access-email" type="email" name="email" [(ngModel)]="email" autocomplete="email" placeholder="tu.correo@ejemplo.com" required />
+
+      @if (mode === 'login' || mode === 'register') {
+        <label for="access-password">Contraseña</label>
+        <div class="password-field">
+          <input id="access-password" [type]="showPassword ? 'text' : 'password'" name="password" [(ngModel)]="password" [attr.autocomplete]="mode === 'register' ? 'new-password' : 'current-password'" placeholder="Tu contraseña" required minlength="8" />
+          <button type="button" (click)="showPassword = !showPassword" [attr.aria-label]="showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'">{{ showPassword ? 'Ocultar' : 'Mostrar' }}</button>
+        </div>
+      }
+      @if (mode === 'register') {
+        <label for="access-confirm-password">Repetir contraseña</label>
+        <input id="access-confirm-password" [type]="showPassword ? 'text' : 'password'" name="confirmPassword" [(ngModel)]="confirmPassword" autocomplete="new-password" placeholder="Repetí tu contraseña" required minlength="8" />
+        @if (confirmPassword && password !== confirmPassword) { <p class="validation-note">Las contraseñas no coinciden.</p> }
+      }
+      @if (mode === 'confirm') {
+        <label for="access-code">Código de confirmación</label>
+        <input id="access-code" type="text" name="confirmationCode" [(ngModel)]="confirmationCode" inputmode="numeric" autocomplete="one-time-code" placeholder="Código recibido por correo" required />
+      }
+      @if (mode === 'login') {
+        <button class="access-link forgot-link" type="button" (click)="changeMode('recover')">¿Olvidaste tu contraseña?</button>
+      }
+      <button class="btn btn-gradient access-submit" type="submit" [disabled]="mode === 'register' && password !== confirmPassword">
+        @switch (mode) {
+          @case ('login') { Iniciar sesión → }
+          @case ('register') { Crear cuenta → }
+          @case ('confirm') { Confirmar correo → }
+          @case ('recover') { Recuperar contraseña → }
+        }
+      </button>
+      @if (message) { <p class="access-message" role="status">{{ message }}</p> }
+    </form>
+
+    @if (mode === 'login') {
+      <p class="access-bottom">¿Todavía no tenés una cuenta? <button class="access-link" type="button" (click)="changeMode('register')">Crear cuenta gratis</button></p>
+    } @else if (mode === 'register') {
+      <p class="access-bottom">¿Ya tenés cuenta? <button class="access-link" type="button" (click)="changeMode('login')">Iniciá sesión</button></p>
+      <button class="access-link secondary-action" type="button" (click)="changeMode('confirm')">¿Ya tenés un código de confirmación?</button>
+    } @else {
+      <button class="access-link secondary-action" type="button" (click)="changeMode('login')">← Volver al inicio de sesión</button>
+    }
+    <p class="access-disclaimer">Vista previa de interfaz. Todavía no se registran usuarios ni se almacenan contraseñas.</p>
+    <a routerLink="/" class="access-home">← Volver al inicio</a>
+  </div>
+</section>

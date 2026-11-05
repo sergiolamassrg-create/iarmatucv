@@ -6,7 +6,7 @@ import { apiRouter } from './routes/api.routes.js';
 
 export const app = express();
 app.disable('x-powered-by');
-app.use(cors({ origin: environment.frontendOrigins }));
+app.use(cors({ origin: environment.frontendOrigins, credentials: true }));
 app.use(express.json({ limit: '32kb' }));
 app.use('/api/v1', apiRouter);
 app.use((_req, res) => {

@@ -57,9 +57,11 @@ También pueden ejecutarse directamente `npm.cmd install`, `npm.cmd run build` y
 
 Implementado: portada Angular basada en el boceto original con ilustración, fuentes locales, animaciones CSS, seis diseños seleccionables y vista previa ampliada. Angular obtiene el catálogo desde Express mediante HttpClient, con estados de carga, error y reintento. La API organiza el catálogo en Router, Controller, Service y Repository. Incluye navegación, temas claro/oscuro y consulta de estado de la API.
 
-Pendiente: CRUD de CV, conexión PostgreSQL, autenticación Cognito, autorización por propietario y despliegue. No se guardan CV ni se simulan cuentas. Las rutas de CV se incorporarán al implementar sus operaciones. Un healthcheck correcto **solo indica que la API responde**.
+Se integraron los formularios de acceso con Cognito a través del backend Express existente: registro, confirmación, ingreso, recuperación, nueva contraseña y sesión con cookie HttpOnly. Completar el Client Secret del app client en `Back End/.env` si corresponde y revisar [la configuración de Cognito](docs/Cognito.md). La prueba con una cuenta real requiere esa configuración; no se crearon cuentas de prueba en AWS.
 
-No se implementan IA, generación PDF, Google federado ni servicios AWS en esta fase.
+Pendiente: CRUD de CV, persistencia, autorización por propietario y despliegue. No se guardan CV ni se simulan cuentas. Las rutas de CV se incorporarán al implementar sus operaciones. Un healthcheck correcto **solo indica que la API responde**.
+
+No se implementan IA, generación PDF ni Google federado. No se crearon ni desplegaron recursos AWS durante estos cambios.
 
 ## Documentación vigente
 
@@ -67,4 +69,4 @@ No se implementan IA, generación PDF, Google federado ni servicios AWS en esta 
 - [Frontend](Front%20End/README.md).
 - [Backend](Back%20End/README.md).
 
-La actualización técnica del usuario prevalece sobre Lambda/DynamoDB en los documentos anteriores. Los originales de `Arquitectura AWS` se mantienen intactos; describen propuestas históricas, no recursos desplegados.
+La separación acordada entre entregas contempla Express/TypeScript con MongoDB para Backend y Python/Lambda con DynamoDB para Nube. Esta copia todavía ejecuta Express; integrar Cognito no la convierte en un backend Lambda. La adaptación de ejecución y sesiones para AWS queda pendiente. Los originales de `Arquitectura AWS` se mantienen intactos.

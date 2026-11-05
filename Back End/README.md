@@ -47,4 +47,10 @@ El frontend consume `/api/v1/plantillas` con HttpClient. Su URL se configura en 
 
 ## Pendiente
 
-Modelo y operaciones CRUD de CV, persistencia en PostgreSQL y autenticación con Cognito. Las rutas privadas se incorporarán con sus operaciones y controles de acceso. El despliegue AWS sigue pendiente.
+Modelo y operaciones CRUD de CV y persistencia según la entrega. Las rutas privadas se incorporarán con sus operaciones y controles de acceso. El despliegue AWS sigue pendiente.
+
+## Acceso con Cognito
+
+Se agregó `/api/v1/auth` para registro, confirmación, reenvío, ingreso, recuperación, nueva contraseña, consulta y cierre de sesión. Se utiliza el SDK oficial de Cognito y express-session. Las dependencias se agregaron mediante npm; no se copiaron las versiones antiguas ni el motor EJS del ejemplo.
+
+Completar `COGNITO_CLIENT_SECRET` en `.env` si el app client tiene secreto. El archivo local ya incluye un `SESSION_SECRET` aleatorio y está excluido de Git. No se requieren claves IAM. Reiniciar la API después de editar el archivo. Consultar [configuración, endpoints y límites de despliegue](../docs/Cognito.md): el almacenamiento de sesiones en memoria es exclusivamente para desarrollo.

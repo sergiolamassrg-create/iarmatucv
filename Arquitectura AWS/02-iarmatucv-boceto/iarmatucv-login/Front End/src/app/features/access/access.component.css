@@ -1,0 +1,37 @@
+:host { display: block; }
+.access-layout { display: grid; grid-template-columns: minmax(0, .95fr) minmax(0, 1.05fr); align-items: center; gap: clamp(24px, 5vw, 90px); padding-block: 42px 80px; min-height: 680px; }
+.access-intro { position: relative; min-width: 0; }
+.access-pill { display: inline-block; padding: 7px 15px; border-radius: 25px; background: #efe9ff; color: #5129b3; font-size: 13px; font-weight: 750; }
+.access-intro h1 { font-size: clamp(38px, 4vw, 67px); font-weight: 850; line-height: 1.08; max-width: 620px; margin: 23px 0; }
+.access-description { font-size: 16px; max-width: 540px; }
+.access-benefits { list-style: none; padding: 0; margin: 24px 0; color: var(--ink); display: grid; gap: 9px; font-size: 14px; }
+.access-benefits li::before { content: '✓'; color: #8734ff; border: 1.5px solid currentColor; border-radius: 50%; font-size: 11px; padding: 0 4px; margin-right: 10px; font-weight: 800; }
+.access-illustration { position: relative; max-width: 550px; overflow: hidden; border-radius: 28px; }
+.access-illustration img { width: 100%; display: block; position: relative; mix-blend-mode: multiply; }
+.access-glow { position: absolute; inset: 20% 6% 3%; border-radius: 40%; background: linear-gradient(120deg, #8a34ff35, #06b6d435, #ec489930); filter: blur(30px); }
+.access-panel { min-width: 0; background: var(--surface); border: 1px solid var(--line); border-radius: 28px; box-shadow: 0 18px 55px #42449c12; padding: clamp(24px, 4vw, 64px); }
+.access-tabs { display: grid; grid-template-columns: 1fr 1fr; background: var(--soft); padding: 4px; border-radius: 40px; margin-bottom: 35px; }
+.access-tabs button { border: 1px solid transparent; background: transparent; color: var(--ink); font-weight: 750; border-radius: 36px; padding: 12px 6px; }
+.access-tabs button.selected { background: var(--surface); color: var(--link); border-color: #b8a7ff; box-shadow: 0 3px 9px #6451c31c; }
+.access-panel h2 { font-size: clamp(25px, 2.5vw, 37px); margin: 0; text-align: center; }
+.panel-subtitle { text-align: center; margin: 12px 0 32px; font-size: 15px; }
+.access-form { display: flex; flex-direction: column; gap: 10px; }
+.access-form label { color: var(--ink); font-weight: 750; font-size: 14px; }
+.access-form input { width: 100%; min-height: 52px; border: 1.5px solid #cfd3ef; border-radius: 15px; padding: 12px 17px; color: var(--ink); background: var(--surface); font: inherit; }
+.access-form input:focus { outline: 3px solid #7950f233; border-color: var(--focus); }
+.password-field { position: relative; }
+.password-field input { padding-right: 90px; }
+.password-field button { position: absolute; right: 9px; top: 9px; padding: 8px; border: 0; color: var(--link); background: transparent; font-size: 12px; }
+.access-link { border: 0; background: transparent; padding: 0; color: var(--link); font: inherit; font-weight: 750; cursor: pointer; }
+.forgot-link { align-self: flex-end; font-size: 13px; margin: 3px 0 8px; }
+.access-submit { width: 100%; min-height: 56px; border-radius: 17px; font-size: 16px; margin-top: 12px; }
+.access-bottom { text-align: center; margin: 26px 0 4px; font-size: 14px; }
+.secondary-action { display: block; margin: 17px auto 0; font-size: 13px; }
+.access-disclaimer { margin: 26px 0 0; text-align: center; font-size: 11px; line-height: 1.6; }
+.access-home { display: block; margin-top: 14px; color: var(--link); text-align: center; font-size: 12px; }
+.access-message { background: var(--soft); color: var(--ink); padding: 12px 14px; border-radius: 12px; font-size: 13px; }
+.validation-note { margin: 0; color: var(--error); font-size: 12px; }
+:host-context(.dark-mode) .access-pill { background: #382b65; color: #dfcaff; }
+:host-context(.dark-mode) .access-illustration img { mix-blend-mode: normal; border-radius: 20px; }
+@media (max-width: 960px) { .access-layout { grid-template-columns: 1fr; max-width: 740px; } .access-intro h1 { max-width: 700px; } .access-illustration { max-width: 420px; } }
+@media (max-width: 540px) { .access-layout { padding-block: 20px 48px; gap: 20px; } .access-panel { padding: 24px 18px; border-radius: 20px; } .access-intro h1 { font-size: 38px; } .access-illustration { display: none; } .access-tabs button { font-size: 13px; } }

@@ -1,0 +1,5 @@
+@media (max-width: 760px) {
+  .access-header { min-height: 64px; flex-wrap: nowrap; gap: 12px; padding-block: 10px; }
+  .access-header .main-nav, .access-header .header-actions > .btn { display: none; }
+  .access-header .theme-toggle { width: 44px; height: 44px; }
+}

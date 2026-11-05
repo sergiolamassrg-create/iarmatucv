@@ -1,0 +1,124 @@
+<section class="access-layout container" aria-labelledby="access-title">
+  <div class="access-intro">
+    <span class="access-pill">✦ Accedé a tu cuenta</span>
+    <h1 id="access-title">Un espacio para tu historia. Un CV <span class="gradient-text">muy vos.</span></h1>
+    <p class="access-description">Tu próximo paso empieza acá. Creá tu cuenta o ingresá para continuar construyendo tu recorrido profesional.</p>
+    <ul class="access-benefits">
+      <li>Guardá y editá tus currículums</li>
+      <li>Usá plantillas profesionales</li>
+      <li>Retomá tus avances cuando lo necesites</li>
+      <li>Accedé desde cualquier dispositivo</li>
+    </ul>
+    <div class="access-illustration" aria-hidden="true">
+      <div class="access-glow"></div>
+      <img src="/assets/hero-reference.png" alt="" />
+    </div>
+  </div>
+
+  <div class="access-panel">
+    @if (auth.user; as user) {
+      <div class="access-account">
+        <span class="access-pill">✦ Tu cuenta</span>
+        <h2>¡Qué bueno verte!</h2>
+        <p>Ingresaste con <strong>{{ user.email || user.username }}</strong>.</p>
+        <p class="access-message" role="status">Tu sesión está activa. La gestión de currículums se incorporará en la próxima etapa.</p>
+        <button class="btn btn-gradient access-submit" type="button" (click)="logout()" [disabled]="busy">{{ busy ? 'Cerrando sesión…' : 'Cerrar sesión' }}</button>
+        @if (error) { <p class="access-error" role="alert">{{ error }}</p> }
+        <a routerLink="/" class="access-account-home">← Volver al inicio</a>
+      </div>
+    } @else {
+    <div class="access-tabs" role="group" aria-label="Tipo de acceso">
+      <button type="button" [disabled]="busy" [class.selected]="mode === 'login' || mode === 'recover' || mode === 'reset'" [attr.aria-pressed]="mode === 'login' || mode === 'recover' || mode === 'reset'" (click)="changeMode('login', accessForm)">Iniciar sesión</button>
+      <button type="button" [disabled]="busy" [class.selected]="mode === 'register' || mode === 'confirm'" [attr.aria-pressed]="mode === 'register' || mode === 'confirm'" (click)="changeMode('register', accessForm)">Crear cuenta</button>
+    </div>
+
+    @switch (mode) {
+      @case ('login') {
+        <h2>Iniciar sesión en <span class="gradient-text">iArmatuCV</span></h2>
+        <p class="panel-subtitle">Tu historia sigue. Accedé a tu cuenta para continuar.</p>
+      }
+      @case ('register') {
+        <h2>Creá tu cuenta</h2>
+        <p class="panel-subtitle">Un espacio para construir tu próximo paso profesional.</p>
+      }
+      @case ('confirm') {
+        <h2>Confirmá tu correo</h2>
+        <p class="panel-subtitle">Ingresá el código de confirmación que recibiste por correo.</p>
+      }
+      @case ('recover') {
+        <h2>Recuperar contraseña</h2>
+        <p class="panel-subtitle">Solicitá un código para recuperar el acceso a tu cuenta.</p>
+      }
+      @case ('reset') {
+        <h2>Elegí una nueva contraseña</h2>
+        <p class="panel-subtitle">Ingresá el código recibido por correo y tu nueva contraseña.</p>
+      }
+    }
+
+    <form #accessForm="ngForm" class="access-form" (ngSubmit)="submit(accessForm)" (input)="message = ''; error = ''" [attr.aria-busy]="busy">
+      <fieldset class="access-fields" [disabled]="busy">
+      <label for="access-email">Correo electrónico</label>
+      <input id="access-email" type="email" name="email" [(ngModel)]="email" #emailField="ngModel" email autocomplete="email" placeholder="tu.correo@ejemplo.com" required maxlength="254" [attr.aria-invalid]="emailField.invalid && emailField.touched" [attr.aria-describedby]="emailField.invalid && emailField.touched ? 'access-email-error' : null" />
+      @if (emailField.invalid && emailField.touched) {
+        <p id="access-email-error" class="validation-note">Ingresá un correo electrónico válido.</p>
+      }
+
+      @if (mode === 'login' || mode === 'register' || mode === 'reset') {
+        <label for="access-password">Contraseña</label>
+        <div class="password-field">
+          <input id="access-password" [type]="showPassword ? 'text' : 'password'" name="password" [(ngModel)]="password" #passwordField="ngModel" [attr.autocomplete]="mode === 'login' ? 'current-password' : 'new-password'" placeholder="Tu contraseña" required [minlength]="mode === 'login' ? null : 8" maxlength="256" [attr.aria-invalid]="passwordField.invalid && passwordField.touched" [attr.aria-describedby]="passwordField.invalid && passwordField.touched ? 'access-password-error' : null" />
+          <button type="button" (click)="showPassword = !showPassword" [attr.aria-pressed]="showPassword" [attr.aria-label]="showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'">{{ showPassword ? 'Ocultar' : 'Mostrar' }}</button>
+        </div>
+        @if (passwordField.invalid && passwordField.touched) {
+          <p id="access-password-error" class="validation-note">{{ mode === 'login' ? 'Ingresá tu contraseña.' : 'Ingresá al menos 8 caracteres.' }}</p>
+        }
+      }
+      @if (mode === 'register' || mode === 'reset') {
+        <label for="access-confirm-password">Repetir contraseña</label>
+        <input id="access-confirm-password" [type]="showPassword ? 'text' : 'password'" name="confirmPassword" [(ngModel)]="confirmPassword" #confirmField="ngModel" autocomplete="new-password" placeholder="Repetí tu contraseña" required maxlength="256" [attr.aria-invalid]="confirmField.touched && (!confirmPassword || password !== confirmPassword)" [attr.aria-describedby]="confirmField.touched && (!confirmPassword || password !== confirmPassword) ? 'access-confirm-error' : null" />
+        @if (confirmField.touched && (!confirmPassword || password !== confirmPassword)) {
+          <p id="access-confirm-error" class="validation-note">{{ !confirmPassword ? 'Repetí la contraseña.' : 'Las contraseñas no coinciden.' }}</p>
+        }
+      }
+      @if (mode === 'confirm' || mode === 'reset') {
+        <label for="access-code">Código de confirmación</label>
+        <input id="access-code" type="text" name="confirmationCode" [(ngModel)]="confirmationCode" #codeField="ngModel" inputmode="numeric" autocomplete="one-time-code" placeholder="Código recibido por correo" required pattern="[0-9]+" maxlength="32" [attr.aria-invalid]="codeField.invalid && codeField.touched" [attr.aria-describedby]="codeField.invalid && codeField.touched ? 'access-code-error' : null" />
+        @if (codeField.invalid && codeField.touched) {
+          <p id="access-code-error" class="validation-note">Ingresá el código numérico recibido por correo.</p>
+        }
+      }
+      @if (mode === 'login') {
+        <button class="access-link forgot-link" type="button" (click)="changeMode('recover', accessForm)">¿Olvidaste tu contraseña?</button>
+      }
+      <button class="btn btn-gradient access-submit fx-shine fx-glow" type="submit">
+        @if (busy) { Conectando… } @else { @switch (mode) {
+          @case ('login') { Iniciar sesión → }
+          @case ('register') { Crear cuenta → }
+          @case ('confirm') { Confirmar correo → }
+          @case ('recover') { Recuperar contraseña → }
+          @case ('reset') { Guardar contraseña → }
+        } }
+      </button>
+      </fieldset>
+      @if (message) { <p class="access-message" role="status">{{ message }}</p> }
+      @if (error) { <p class="access-error" role="alert">{{ error }}</p> }
+    </form>
+
+    @if (mode === 'login') {
+      <p class="access-bottom">¿Todavía no tenés una cuenta? <button class="access-link" type="button" (click)="changeMode('register', accessForm)">Crear cuenta</button></p>
+    } @else if (mode === 'register') {
+      <p class="access-bottom">¿Ya tenés cuenta? <button class="access-link" type="button" (click)="changeMode('login', accessForm)">Iniciá sesión</button></p>
+      <button class="access-link secondary-action" type="button" (click)="changeMode('confirm', accessForm)">¿Ya tenés un código de confirmación?</button>
+    } @else {
+      @if (mode === 'confirm') {
+        <button class="access-link secondary-action" type="button" [disabled]="busy" (click)="resendCode(accessForm)">Reenviar código de confirmación</button>
+      }
+      @if (mode === 'reset') {
+        <button class="access-link secondary-action" type="button" [disabled]="busy" (click)="changeMode('recover', accessForm)">Solicitar otro código</button>
+      }
+      <button class="access-link secondary-action" type="button" [disabled]="busy" (click)="changeMode('login', accessForm)">← Volver al inicio de sesión</button>
+    }
+    <a routerLink="/" class="access-home">← Volver al inicio</a>
+    }
+  </div>
+</section>

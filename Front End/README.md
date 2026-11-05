@@ -24,7 +24,7 @@ Se fija Vite 8.3.5 mediante `overrides` porque Angular Build 22.2.4 incluye una 
 | Ruta | Función |
 |---|---|
 | `/` | Portada animada, seis diseños seleccionables, vista previa y preguntas |
-| `/acceso` | Informa que registro/login aún no están disponibles; no pide contraseñas |
+| `/acceso` | Ingreso, registro, confirmación, recuperación y sesión con Cognito a través de la API |
 | `/estado` | Consume el healthcheck del backend mediante HttpClient |
 | Otra | Página de recurso no encontrado |
 
@@ -43,7 +43,17 @@ src/styles.css        Tokens y estilos responsive
 src/environments/     URL pública de API
 ```
 
-Se aplican HTML semántico, CSS, Grid/Flexbox, componentes, templates, binding, eventos, servicios, inyección de dependencias, routing, `@if`/`@for` y HttpClient. Son contenidos del programa de Front End. Formularios reactivos se incorporarán al implementar el editor, no hay formularios ficticios en esta fase.
+Se aplican HTML semántico, CSS, Grid/Flexbox, componentes, templates, binding, eventos, servicios, inyección de dependencias, routing, `@if`/`@for` y HttpClient. La vista previa de acceso usa FormsModule, ngModel y NgForm para validar campos requeridos, formato de correo y coincidencia de contraseñas. Los formularios reactivos del editor siguen pendientes.
+
+## Acceso con Cognito
+
+Se incorporó el boceto de `../Arquitectura AWS/02-iarmatucv-boceto/iarmatucv-login/` como template y CSS del componente de acceso. Se reutilizan las fuentes, variables de color, gradientes, botones e ilustración actuales; los originales se conservan. La interfaz se adapta a celular y a los temas claro y oscuro.
+
+Los formularios consumen `/api/v1/auth`: registro, confirmación y reenvío de códigos, ingreso, recuperación y nueva contraseña. Al ingresar se muestra la cuenta y se habilita el cierre de sesión. La cookie HttpOnly mantiene la sesión al recargar; los tokens y el Client Secret permanecen en el servidor. Las contraseñas y códigos se limpian después de cada solicitud y al cambiar de vista. Cognito aplica la política real de contraseñas. La gestión de CV sigue pendiente.
+
+En celular se priorizan el formulario y los botones de ingreso/registro: se oculta la presentación y el encabezado de acceso muestra solo la marca y el cambio de tema. En tablet el formulario aparece antes de la presentación. Se mantiene el desplazamiento natural para pantallas bajas, teclado en pantalla y mensajes de validación.
+
+Completar la configuración privada en `../Back End/.env` y revisar los pasos de [Cognito](../docs/Cognito.md). Angular no lee ese archivo ni contiene secretos. La configuración del app client debe admitir `ALLOW_USER_PASSWORD_AUTH`; un cliente configurado solamente para el ejemplo OAuth/EJS no habilita este flujo automáticamente. No se configuraron recursos AWS desde el código.
 
 ## Comunicación
 
@@ -61,6 +71,6 @@ La galería usa un componente Angular reutilizable con seis variantes visuales. 
 
 El movimiento usa CSS nativo: entrada de portada, flotación suave de la ilustración, destellos, brillo de botones, efectos de hover/foco y transiciones del tema. `prefers-reduced-motion` desactiva estas animaciones. No se agregaron librerías visuales ni dependencias de animación.
 
-Los diseños usan datos ficticios y la ilustración representa la visión del producto. IA, PDF, edición, guardado y autenticación siguen pendientes; no se presentan cifras ficticias como métricas reales.
+Los diseños usan datos ficticios y la ilustración representa la visión del producto. IA, PDF, edición y guardado siguen pendientes; no se presentan cifras ficticias como métricas reales. El acceso requiere la configuración de Cognito indicada arriba.
 
-La preferencia de tema es el único dato guardado en localStorage. No se guardan CV, sesiones ni datos personales. El almacenamiento bloqueado no debe impedir navegar. Se incluyen foco visible, enlace para saltar al contenido y movimiento reducido; esto no equivale a certificación de accesibilidad.
+La preferencia de tema es el único dato guardado en localStorage. La sesión usa una cookie HttpOnly y datos del lado servidor; el frontend no persiste credenciales, tokens ni CV. El almacenamiento bloqueado no debe impedir navegar por las páginas públicas. Se incluyen foco visible, enlace para saltar al contenido y movimiento reducido; esto no equivale a certificación de accesibilidad.

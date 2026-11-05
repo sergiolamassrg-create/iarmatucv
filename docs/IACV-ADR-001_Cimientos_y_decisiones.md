@@ -2,6 +2,8 @@
 
 Fecha: 2026-10-23. Estado: aplicado a la fase 1 local; despliegue no autorizado.
 
+Actualización del 2026-11-04: esta copia incorpora acceso con Cognito sobre Express para desarrollo; ver [configuración y límites actuales](Cognito.md). La decisión posterior del usuario separa las entregas: MongoDB con Express/TypeScript para Backend y DynamoDB con Python/Lambda para Nube. Las referencias a PostgreSQL y a un único backend que siguen abajo describen la decisión inicial y quedan superadas en esos puntos. La persistencia y la adaptación a Lambda todavía no están implementadas.
+
 ## Fuentes y precedencia
 
 Se revisaron `Arquitectura AWS/README.md`, `01-arquitectura/IACV-ARC-002_Arquitectura_Tecnica_AWS.md`, el análisis funcional IACV-AF-001, los bocetos estáticos y la botonera v3. También se consultaron los programas y ejemplos locales de Front End, Back End y Nube como documentación de la cursada.
