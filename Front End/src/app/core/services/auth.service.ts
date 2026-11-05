@@ -1,7 +1,8 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
-import { tap, timeout } from 'rxjs';
+import { defer, tap, timeout } from 'rxjs';
 import { environment } from '../../../environments/environment';
+import { apiUrl, ApiConfigurationError } from '../config/api.config';
 import { AuthUser } from '../models/auth-user';
 
 interface ApiResponse<T> { data: T; }
@@ -11,11 +12,11 @@ interface Message { message: string; }
 export class AuthService {
   user: AuthUser | null = null;
   private sessionVersion = 0;
-  private readonly url = `${environment.apiBaseUrl}/auth`;
 
   constructor(private readonly http: HttpClient) {
+    if (!environment.apiBaseUrl.trim()) return;
     const version = this.sessionVersion;
-    this.http.get<ApiResponse<AuthUser | null>>(`${this.url}/sesion`, { withCredentials: true })
+    defer(() => this.http.get<ApiResponse<AuthUser | null>>(apiUrl('auth/sesion'), { withCredentials: true }))
       .pipe(timeout(25000)).subscribe({ next: response => { if (version === this.sessionVersion) this.user = response.data; }, error: () => {} });
   }
 
@@ -23,8 +24,8 @@ export class AuthService {
     return this.post<AuthUser>('ingreso', { email, password }).pipe(tap(response => { this.sessionVersion++; this.user = response.data; }));
   }
 
-  register(email: string, password: string) {
-    return this.post<{ confirmed: boolean }>('registro', { email, password });
+  register(email: string, password: string, profile: { name: string; familyName: string; nickname: string }) {
+    return this.post<{ confirmed: boolean }>('registro', { email, password, ...profile });
   }
 
   confirm(email: string, code: string) { return this.post<Message>('confirmacion', { email, code }); }
@@ -34,15 +35,18 @@ export class AuthService {
   logout() { return this.post<Message>('salida', {}).pipe(tap(() => { this.sessionVersion++; this.user = null; })); }
 
   errorCode(error: unknown): string {
+    if (error instanceof ApiConfigurationError) return 'API_NO_CONFIGURADA';
     return error instanceof HttpErrorResponse ? error.error?.error?.codigo ?? '' : '';
   }
 
   errorMessage(error: unknown): string {
+    if (error instanceof ApiConfigurationError) return error.message;
     const message: unknown = error instanceof HttpErrorResponse ? error.error?.error?.mensaje : null;
     return typeof message === 'string' ? message : 'No pudimos conectar con el servicio. Revisá tu conexión e intentá nuevamente.';
   }
 
   private post<T>(path: string, body: object) {
-    return this.http.post<ApiResponse<T>>(`${this.url}/${path}`, body, { withCredentials: true }).pipe(timeout(25000));
+    return defer(() => this.http.post<ApiResponse<T>>(apiUrl(`auth/${path}`), body, { withCredentials: true }))
+      .pipe(timeout(25000));
   }
 }

@@ -14,6 +14,7 @@
 .access-tabs button { border: 1px solid transparent; background: transparent; color: var(--ink); font-weight: 750; border-radius: 36px; padding: 12px 6px; }
 .access-tabs button.selected { background: var(--surface); color: var(--link); border-color: #b8a7ff; box-shadow: 0 3px 9px #6451c31c; }
 .access-panel h2 { font-size: clamp(25px, 2.5vw, 37px); margin: 0; text-align: center; }
+.access-step { display: inline-block; vertical-align: middle; margin-left: 8px; padding: 4px 9px; border-radius: 20px; background: var(--soft); color: var(--link); font-family: 'DM Sans', sans-serif; font-size: 12px; font-weight: 600; letter-spacing: 0; }
 .panel-subtitle { text-align: center; margin: 12px 0 32px; font-size: 15px; }
 .access-form { display: flex; flex-direction: column; gap: 10px; margin-top: 24px; }
 .access-fields { display: flex; flex-direction: column; gap: inherit; min-width: 0; margin: 0; padding: 0; border: 0; }

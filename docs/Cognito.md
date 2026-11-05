@@ -20,7 +20,7 @@ No colocar el Client Secret ni claves AWS en Angular, archivos públicos, captur
 En el User Pool `us-east-1_ULwOvMrHA`, revisar el app client `7vdociammjejng2m4ipi25td71`:
 
 1. Permitir el flujo `ALLOW_USER_PASSWORD_AUTH` para el ingreso desde el servidor. El ejemplo OAuth del adjunto por sí solo no garantiza que este flujo esté habilitado.
-2. Para registro desde la aplicación, habilitar autorregistro y comprobar que los atributos requeridos se puedan completar con correo y contraseña. Configurar verificación y recuperación por correo.
+2. Para registro desde la aplicación, habilitar autorregistro y configurar verificación y recuperación por correo. La pantalla de alta del User Pool solicita `name`, `family_name` y `nickname` además del correo y contraseña: el formulario propio ahora pide nombre completo, apellido y nombre para mostrar. El app client debe permitir escribir esos atributos y `email`.
 3. Revisar la política real de contraseñas. La interfaz valida un mínimo de ocho caracteres; Cognito aplica su política definitiva.
 4. Si el pool exige MFA, passkeys o cambio obligatorio de contraseña temporal, la aplicación informa que falta ese paso y no abre una sesión. Esos desafíos necesitan una ampliación del flujo.
 
@@ -35,7 +35,7 @@ npm.cmd run backend:dev
 npm.cmd run frontend:dev
 ```
 
-Abrir `http://127.0.0.1:4200/acceso`. Usar el mismo nombre de host al navegar: no alternar `localhost` y `127.0.0.1`. Registrar una cuenta propia, confirmar su código, ingresar, recargar para comprobar la sesión y cerrar sesión. Recuperación solicita otro código y permite establecer una contraseña nueva.
+Abrir `http://127.0.0.1:4200/acceso`. Usar el mismo nombre de host al navegar: no alternar `localhost` y `127.0.0.1`. El registro tiene dos pasos: datos de la persona y luego correo/contraseña; recién al completar el segundo se llama a Cognito. Los datos se mantienen solo en memoria durante ese formulario. Registrar una cuenta propia, confirmar su código, ingresar, recargar para comprobar la sesión y cerrar sesión. Recuperación solicita otro código y permite establecer una contraseña nueva.
 
 ## API y sesión
 
@@ -44,7 +44,7 @@ Todas las rutas están bajo `/api/v1/auth`:
 | Método | Ruta | Operación |
 |---|---|---|
 | GET | `/sesion` | Devuelve usuario autenticado o `null` |
-| POST | `/registro` | Registro con `email`, `password` |
+| POST | `/registro` | Registro con `name`, `familyName`, `nickname`, `email`, `password` |
 | POST | `/confirmacion` | Confirmación con `email`, `code` |
 | POST | `/reenviar-codigo` | Nuevo código de confirmación con `email` |
 | POST | `/ingreso` | Ingreso con `email`, `password` |

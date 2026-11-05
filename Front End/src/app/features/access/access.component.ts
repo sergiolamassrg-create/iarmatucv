@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, DestroyRef, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, DestroyRef, ElementRef, ViewChild, inject } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule, NgForm } from '@angular/forms';
 import { RouterLink } from '@angular/router';
@@ -16,6 +16,11 @@ type AccessMode = 'login' | 'register' | 'confirm' | 'recover' | 'reset';
 })
 export class AccessComponent {
   mode: AccessMode = 'login';
+  registrationStep: 'profile' | 'credentials' = 'profile';
+  name = '';
+  familyName = '';
+  nickname = '';
+  @ViewChild('registrationTitle') private registrationTitle?: ElementRef<HTMLElement>;
   email = '';
   password = '';
   confirmPassword = '';
@@ -31,6 +36,10 @@ export class AccessComponent {
   changeMode(mode: AccessMode, form: NgForm): void {
     if (this.busy) return;
     this.mode = mode;
+    this.registrationStep = 'profile';
+    this.name = '';
+    this.familyName = '';
+    this.nickname = '';
     this.message = '';
     this.error = '';
     this.resetFields(form);
@@ -38,8 +47,13 @@ export class AccessComponent {
 
   async submit(form: NgForm): Promise<void> {
     if (this.busy) return;
-    if (form.invalid || ((this.mode === 'register' || this.mode === 'reset') && this.password !== this.confirmPassword)) {
+    const needsConfirmation = this.mode === 'reset' || (this.mode === 'register' && this.registrationStep === 'credentials');
+    if (form.invalid || (needsConfirmation && this.password !== this.confirmPassword)) {
       form.form.markAllAsTouched();
+      return;
+    }
+    if (this.mode === 'register' && this.registrationStep === 'profile') {
+      this.changeRegistrationStep('credentials', form);
       return;
     }
     this.busy = true;
@@ -52,7 +66,9 @@ export class AccessComponent {
           await firstValueFrom(this.auth.login(this.email, this.password).pipe(takeUntilDestroyed(this.destroyRef)));
           break;
         case 'register': {
-          const response = await firstValueFrom(this.auth.register(this.email, this.password).pipe(takeUntilDestroyed(this.destroyRef)));
+          const response = await firstValueFrom(this.auth.register(this.email, this.password, {
+            name: this.name.trim(), familyName: this.familyName.trim(), nickname: this.nickname.trim()
+          }).pipe(takeUntilDestroyed(this.destroyRef)));
           this.mode = response.data.confirmed ? 'login' : 'confirm';
           this.message = response.data.confirmed ? 'Cuenta creada. Ya podés iniciar sesión.' : 'Revisá tu correo e ingresá el código para confirmar tu cuenta.';
           break;
@@ -80,11 +96,23 @@ export class AccessComponent {
       if (this.destroyRef.destroyed) return;
       if (this.auth.errorCode(error) === 'CUENTA_SIN_CONFIRMAR') this.mode = 'confirm';
       if (this.auth.errorCode(error) === 'RECUPERACION_REQUERIDA') this.mode = 'recover';
+      if (this.mode === 'register' && this.auth.errorCode(error) === 'DATOS_DE_CUENTA_INCOMPLETOS') this.registrationStep = 'profile';
       this.error = this.auth.errorMessage(error);
     } finally {
       this.busy = false;
       this.resetFields(form);
     }
+  }
+
+  changeRegistrationStep(step: 'profile' | 'credentials', form: NgForm): void {
+    if (this.busy) return;
+    this.registrationStep = step;
+    this.error = '';
+    this.message = '';
+    this.resetFields(form);
+    requestAnimationFrame(() => {
+      if (!this.destroyRef.destroyed) this.registrationTitle?.nativeElement.focus();
+    });
   }
 
   async resendCode(form: NgForm): Promise<void> {
@@ -122,6 +150,9 @@ export class AccessComponent {
     this.confirmPassword = '';
     this.confirmationCode = '';
     this.showPassword = false;
-    form.resetForm({ email: this.email });
+    form.resetForm({
+      email: this.email, name: this.name, familyName: this.familyName, nickname: this.nickname,
+      password: '', confirmPassword: '', confirmationCode: ''
+    });
   }
 }

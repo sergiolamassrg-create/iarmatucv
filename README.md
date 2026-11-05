@@ -2,6 +2,8 @@
 
 Aplicación en desarrollo con frontend Angular y API Express separados.
 
+Angular ya separa desarrollo y producción. El build destinado a AWS deja la API pendiente sin URL local ni endpoint inventado; la conexión serverless y la publicación siguen pendientes. Ver [auditoría y preparación para AWS](docs/Preparacion-AWS.md).
+
 Versiones de desarrollo: Angular 22 con TypeScript 6.0 en frontend; Express 5 con TypeScript 7 en backend. Ambos usan Node 24.22.1. Las versiones exactas se conservan en el `package-lock.json` de cada proyecto.
 
 ## Organización obligatoria

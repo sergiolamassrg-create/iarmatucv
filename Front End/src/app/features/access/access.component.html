@@ -38,8 +38,8 @@
         <p class="panel-subtitle">Tu historia sigue. Accedé a tu cuenta para continuar.</p>
       }
       @case ('register') {
-        <h2>Creá tu cuenta</h2>
-        <p class="panel-subtitle">Un espacio para construir tu próximo paso profesional.</p>
+        <h2 #registrationTitle tabindex="-1">{{ registrationStep === 'profile' ? 'Tus datos' : 'Tu acceso' }} <span class="access-step">{{ registrationStep === 'profile' ? '1 de 2' : '2 de 2' }}</span></h2>
+        <p class="panel-subtitle">{{ registrationStep === 'profile' ? 'Contanos cómo querés que te conozcamos.' : 'Elegí el correo y la contraseña para tu cuenta.' }}</p>
       }
       @case ('confirm') {
         <h2>Confirmá tu correo</h2>
@@ -57,6 +57,17 @@
 
     <form #accessForm="ngForm" class="access-form" (ngSubmit)="submit(accessForm)" (input)="message = ''; error = ''" [attr.aria-busy]="busy">
       <fieldset class="access-fields" [disabled]="busy">
+      @if (mode === 'register' && registrationStep === 'profile') {
+        <label for="access-name">Nombre completo</label>
+        <input id="access-name" name="name" type="text" [(ngModel)]="name" #nameField="ngModel" autocomplete="name" placeholder="Tu nombre completo" required pattern=".*\S.*" maxlength="128" [attr.aria-invalid]="nameField.invalid && nameField.touched" [attr.aria-describedby]="nameField.invalid && nameField.touched ? 'access-name-error' : null" />
+        @if (nameField.invalid && nameField.touched) { <p id="access-name-error" class="validation-note">Ingresá tu nombre completo.</p> }
+        <label for="access-family-name">Apellido</label>
+        <input id="access-family-name" name="familyName" type="text" [(ngModel)]="familyName" #familyField="ngModel" autocomplete="family-name" placeholder="Tu apellido" required pattern=".*\S.*" maxlength="128" [attr.aria-invalid]="familyField.invalid && familyField.touched" [attr.aria-describedby]="familyField.invalid && familyField.touched ? 'access-family-error' : null" />
+        @if (familyField.invalid && familyField.touched) { <p id="access-family-error" class="validation-note">Ingresá tu apellido.</p> }
+        <label for="access-nickname">Nombre para mostrar</label>
+        <input id="access-nickname" name="nickname" type="text" [(ngModel)]="nickname" #nicknameField="ngModel" autocomplete="nickname" placeholder="Cómo querés que te llamemos" required pattern=".*\S.*" maxlength="64" [attr.aria-invalid]="nicknameField.invalid && nicknameField.touched" [attr.aria-describedby]="nicknameField.invalid && nicknameField.touched ? 'access-nickname-error' : null" />
+        @if (nicknameField.invalid && nicknameField.touched) { <p id="access-nickname-error" class="validation-note">Ingresá un nombre para mostrar.</p> }
+      } @else {
       <label for="access-email">Correo electrónico</label>
       <input id="access-email" type="email" name="email" [(ngModel)]="email" #emailField="ngModel" email autocomplete="email" placeholder="tu.correo@ejemplo.com" required maxlength="254" [attr.aria-invalid]="emailField.invalid && emailField.touched" [attr.aria-describedby]="emailField.invalid && emailField.touched ? 'access-email-error' : null" />
       @if (emailField.invalid && emailField.touched) {
@@ -90,10 +101,11 @@
       @if (mode === 'login') {
         <button class="access-link forgot-link" type="button" (click)="changeMode('recover', accessForm)">¿Olvidaste tu contraseña?</button>
       }
+      }
       <button class="btn btn-gradient access-submit fx-shine fx-glow" type="submit">
         @if (busy) { Conectando… } @else { @switch (mode) {
           @case ('login') { Iniciar sesión → }
-          @case ('register') { Crear cuenta → }
+          @case ('register') { {{ registrationStep === 'profile' ? 'Continuar →' : 'Crear cuenta →' }} }
           @case ('confirm') { Confirmar correo → }
           @case ('recover') { Recuperar contraseña → }
           @case ('reset') { Guardar contraseña → }
@@ -108,7 +120,11 @@
       <p class="access-bottom">¿Todavía no tenés una cuenta? <button class="access-link" type="button" (click)="changeMode('register', accessForm)">Crear cuenta</button></p>
     } @else if (mode === 'register') {
       <p class="access-bottom">¿Ya tenés cuenta? <button class="access-link" type="button" (click)="changeMode('login', accessForm)">Iniciá sesión</button></p>
+      @if (registrationStep === 'credentials') {
+        <button class="access-link secondary-action" type="button" [disabled]="busy" (click)="changeRegistrationStep('profile', accessForm)">← Corregir mis datos</button>
+      } @else {
       <button class="access-link secondary-action" type="button" (click)="changeMode('confirm', accessForm)">¿Ya tenés un código de confirmación?</button>
+      }
     } @else {
       @if (mode === 'confirm') {
         <button class="access-link secondary-action" type="button" [disabled]="busy" (click)="resendCode(accessForm)">Reenviar código de confirmación</button>

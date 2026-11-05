@@ -29,7 +29,11 @@ function clearCookie(res: Response): void {
 }
 
 export async function registerController(req: Request, res: Response): Promise<void> {
-  res.status(201).json({ data: await auth.register(email(req), field(req, 'password', 256)) });
+  res.status(201).json({ data: await auth.register(email(req), field(req, 'password', 256), {
+    name: field(req, 'name', 128),
+    familyName: field(req, 'familyName', 128),
+    nickname: field(req, 'nickname', 64)
+  }) });
 }
 
 export async function confirmController(req: Request, res: Response): Promise<void> {

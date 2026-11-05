@@ -19,6 +19,12 @@ Se usa Node 24.22.1 y se declara Node >=24.22.1 y <25. Angular se migró de 20 a
 
 Se fija Vite 8.3.5 mediante `overrides` porque Angular Build 22.2.4 incluye una versión anterior afectada por vulnerabilidades corregidas en esa rama. Referencia: https://github.com/advisories/GHSA-587h-7wmj-h5pm.
 
+## Desarrollo y producción
+
+`npm start` conserva la API local de `src/environments/environment.ts`. `npm run build` usa `environment.production.ts` mediante fileReplacements de Angular. La URL de producción queda vacía hasta disponer de una API HTTPS real: las solicitudes se bloquean de forma controlada y el acceso informa que el servicio todavía no está habilitado. Esto permite preparar la publicación estática sin enviar credenciales a localhost ni a una API ficticia. No agregar secretos en estos archivos públicos.
+
+Ver [auditoría, preparación AWS y procedimiento propuesto](../docs/Preparacion-AWS.md). La carpeta a publicar es solamente `dist/iarmatucv/browser/`. El alojamiento debe resolver la recarga de las rutas SPA con el `index.html` raíz. Cambiar la URL no migra las sesiones Express a JWT ni implementa Lambda.
+
 ## Rutas
 
 | Ruta | Función |

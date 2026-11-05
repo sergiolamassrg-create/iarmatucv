@@ -25,10 +25,15 @@ function clientParameters(email: string) {
   };
 }
 
-export async function register(email: string, password: string) {
+export async function register(email: string, password: string, profile: { name: string; familyName: string; nickname: string }) {
   const result = await cognitoClient.send(new SignUpCommand({
     ...clientParameters(email), Username: email, Password: password,
-    UserAttributes: [{ Name: 'email', Value: email }]
+    UserAttributes: [
+      { Name: 'email', Value: email },
+      { Name: 'name', Value: profile.name },
+      { Name: 'family_name', Value: profile.familyName },
+      { Name: 'nickname', Value: profile.nickname }
+    ]
   }));
   return { confirmed: result.UserConfirmed === true };
 }

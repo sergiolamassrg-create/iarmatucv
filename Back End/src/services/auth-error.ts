@@ -13,6 +13,19 @@ export function cognitoError(error: unknown): AuthError | null {
     console.error('Cognito: revisar el Client Secret y los flujos habilitados del app client.');
     return new AuthError(503, 'CONFIGURACION_DE_ACCESO_INVALIDA', 'No pudimos conectar con el servicio de acceso. Intentá nuevamente más tarde.');
   }
+  if (name === 'InvalidParameterException') {
+    if (/unauthorized attribute|not.*authorized.*attribute/i.test(message)) {
+      console.error('Cognito: el app client no permite escribir los atributos del registro.');
+      return new AuthError(503, 'ATRIBUTOS_NO_PERMITIDOS', 'El registro no está disponible en este momento. Intentá nuevamente más tarde.');
+    }
+    if (/schema|attribute.*required|required.*attribute/i.test(message)) {
+      return new AuthError(400, 'DATOS_DE_CUENTA_INCOMPLETOS', 'Completá tu nombre, apellido y nombre para mostrar antes de crear la cuenta.');
+    }
+    if (/password/i.test(message)) {
+      return new AuthError(400, 'CONTRASENA_INVALIDA', 'Revisá la contraseña: no debe comenzar ni terminar con espacios y debe cumplir los requisitos de la cuenta.');
+    }
+    return new AuthError(400, 'DATOS_INVALIDOS', 'Revisá los datos ingresados y volvé a intentar.');
+  }
   switch (name) {
     case 'NotAuthorizedException':
     case 'UserNotFoundException':
@@ -34,7 +47,6 @@ export function cognitoError(error: unknown): AuthError | null {
       return new AuthError(429, 'DEMASIADOS_INTENTOS', 'Hubo demasiados intentos. Esperá unos minutos antes de volver a intentar.');
     case 'PasswordResetRequiredException':
       return new AuthError(409, 'RECUPERACION_REQUERIDA', 'Necesitás recuperar tu contraseña antes de ingresar.');
-    case 'InvalidParameterException':
     case 'InvalidEmailRoleAccessPolicyException':
     case 'CodeDeliveryFailureException':
     case 'ResourceNotFoundException':
