@@ -2,6 +2,8 @@
 
 Fecha: 2026-10-23. Estado: aplicado a la fase 1 local; despliegue no autorizado.
 
+Decisión vigente de la etapa 2 (2026-11-04): se conserva Express/TypeScript en AWS Lambda Node.js con HTTP API v2 y JWT de Cognito; no se migra a Python. Se mantiene el modo local de sesiones. Ver [implementación y pruebas](Lambda-Node.md). Las propuestas anteriores de Python y persistencia describen etapas previas; DynamoDB y CRUD siguen pendientes.
+
 Actualización del 2026-11-04: esta copia incorpora acceso con Cognito sobre Express para desarrollo; ver [configuración y límites actuales](Cognito.md). La decisión posterior del usuario separa las entregas: MongoDB con Express/TypeScript para Backend y DynamoDB con Python/Lambda para Nube. Las referencias a PostgreSQL y a un único backend que siguen abajo describen la decisión inicial y quedan superadas en esos puntos. La persistencia y la adaptación a Lambda todavía no están implementadas.
 
 ## Fuentes y precedencia

@@ -2,6 +2,8 @@
 
 Fecha: 2026-11-04. Alcance: auditoría local y preparación del frontend. No se migró Express, no se ejecutaron operaciones contra AWS y no se hicieron commits ni push. Se conservaron los cambios que ya estaban en el directorio de trabajo.
 
+Evolución posterior: la etapa 2 conserva Express y adapta su ejecución a Lambda Node.js; ver [implementación vigente](Lambda-Node.md). Las propuestas Python/PKCE de este informe inicial no se implementaron y quedan sustituidas por esa decisión. La preparación y configuración Angular de esta etapa se mantienen.
+
 ## Auditoría
 
 La copia local está en `main`, con origen `https://github.com/sergiolamassrg-create/iarmatucv.git`. No se descargaron ni publicaron cambios de GitHub durante esta intervención.

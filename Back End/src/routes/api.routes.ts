@@ -1,9 +1,13 @@
 import { Router } from 'express';
 import { healthController } from '../controllers/health.controller.js';
 import { templatesController } from '../controllers/templates.controller.js';
-import { authRouter } from './auth.routes.js';
+import { createAuthRouter } from './auth.routes.js';
+import type { AuthOptions } from '../models/auth-context.js';
 
-export const apiRouter = Router();
-apiRouter.use('/auth', authRouter);
-apiRouter.get('/health', healthController);
-apiRouter.get('/plantillas', templatesController);
+export function createApiRouter(options: AuthOptions) {
+  const apiRouter = Router();
+  apiRouter.use('/auth', createAuthRouter(options));
+  apiRouter.get('/health', healthController);
+  apiRouter.get('/plantillas', templatesController);
+  return apiRouter;
+}

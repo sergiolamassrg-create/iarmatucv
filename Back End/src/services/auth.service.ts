@@ -16,7 +16,7 @@ export const cognitoClient = new CognitoIdentityProviderClient({
 
 function clientParameters(email: string) {
   const { clientId, clientSecret } = environment.cognito;
-  if (!clientId || environment.sessionSecret.length < 32) {
+  if (!clientId) {
     throw new AuthError(503, 'ACCESO_NO_CONFIGURADO', 'El acceso todavía no está disponible. Intentá nuevamente más tarde.');
   }
   return {

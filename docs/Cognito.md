@@ -1,6 +1,6 @@
 # Acceso con Amazon Cognito
 
-La interfaz de `/acceso` usa el User Pool existente a través de la API Express que actualmente ejecuta esta carpeta. Conserva el diseño propio; no redirige al login administrado ni usa EJS. Esta implementación local no sustituye la futura adaptación del backend a Python/Lambda para la entrega AWS.
+La interfaz de `/acceso` usa el User Pool existente a través de Express. Conserva el diseño propio; no redirige al login administrado ni usa EJS. La etapa 2 conserva Node.js también en Lambda: ver [modos de autenticación y despliegue](Lambda-Node.md). No se migra a Python.
 
 ## Configuración local
 
@@ -44,6 +44,7 @@ Todas las rutas están bajo `/api/v1/auth`:
 | Método | Ruta | Operación |
 |---|---|---|
 | GET | `/sesion` | Devuelve usuario autenticado o `null` |
+| GET | `/perfil` | Exige identidad válida y devuelve el usuario autenticado |
 | POST | `/registro` | Registro con `name`, `familyName`, `nickname`, `email`, `password` |
 | POST | `/confirmacion` | Confirmación con `email`, `code` |
 | POST | `/reenviar-codigo` | Nuevo código de confirmación con `email` |
@@ -52,11 +53,11 @@ Todas las rutas están bajo `/api/v1/auth`:
 | POST | `/restablecer` | Nueva contraseña con `email`, `code`, `password` |
 | POST | `/salida` | Destruye la sesión local y solicita revocación del refresh token |
 
-Los POST requieren JSON y un encabezado `Origin` incluido en `FRONTEND_ORIGINS`; Angular los envía desde el navegador. Las respuestas no incluyen contraseñas, secretos ni tokens. El servidor comprueba el access token con `GetUser`, regenera la sesión al ingresar y devuelve una cookie HttpOnly con SameSite=Lax. No se guardan tokens en localStorage. Al vencer el access token se requiere un nuevo ingreso; todavía no hay renovación automática. Los mensajes de recuperación no confirman si existe una cuenta.
+Los POST requieren JSON y un encabezado `Origin` incluido en `FRONTEND_ORIGINS`; Angular los envía desde el navegador. Las respuestas JSON no incluyen contraseñas, secretos ni tokens. En modo local `session`, el servidor comprueba el access token con `GetUser`, regenera la sesión y entrega una cookie HttpOnly con SameSite=Lax. En modo `jwt`, verifica firma, issuer, expiración, uso y cliente del access token y lo transporta en cookie HttpOnly, sin sesiones en memoria; también acepta Bearer. No se guardan tokens en localStorage. Al vencer el access token se requiere un nuevo ingreso; todavía no hay renovación automática. Los mensajes de recuperación no confirman si existe una cuenta.
 
 ## Antes del despliegue
 
-La sesión usa el MemoryStore de express-session para desarrollo: se pierde al reiniciar y no sirve para producción distribuida ni Lambda. Para desplegar se debe implementar la estrategia de sesión del backend de destino y su almacenamiento, usar HTTPS y configurar correctamente proxy, cookies y orígenes. El frontend debe apuntar a la API desplegada, no a `127.0.0.1`. Para el esquema de cookies actual, servir el frontend y `/api` bajo el mismo sitio, por ejemplo mediante comportamientos de CloudFront. La disponibilidad del frontend estático en CloudFront no publica automáticamente el backend.
+La sesión local con MemoryStore se pierde al reiniciar y se prohíbe en producción/Lambda. El handler Node usa el transporte JWT sin almacenamiento de sesiones. Antes de desplegar faltan recursos autorizados, variables, HTTPS y verificación de cookies y CORS; ver [Lambda Node](Lambda-Node.md). El frontend debe apuntar a la API desplegada, no a `127.0.0.1`. Preferir frontend y `/api` bajo el mismo sitio, por ejemplo mediante comportamientos de CloudFront, para evitar bloqueos de cookies entre sitios. Publicar el frontend estático no publica automáticamente el backend.
 
 ## Referencias
 

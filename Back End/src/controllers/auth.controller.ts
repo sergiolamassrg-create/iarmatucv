@@ -1,8 +1,8 @@
 import type { Request, Response } from 'express';
 import * as auth from '../services/auth.service.js';
 import { AuthError } from '../services/auth-error.js';
-import { sessionCookieName } from '../middlewares/auth-session.middleware.js';
-import { environment } from '../config/environment.js';
+import { openAuth, readAuth, closeAuth } from '../services/auth-transport.service.js';
+import type { AuthIdentity } from '../models/auth-context.js';
 
 function field(req: Request, name: string, max: number): string {
   const value: unknown = req.body?.[name];
@@ -18,14 +18,6 @@ function email(req: Request): string {
     throw new AuthError(400, 'CORREO_INVALIDO', 'Ingresá un correo electrónico válido.');
   }
   return value;
-}
-
-function destroy(req: Request): Promise<void> {
-  return new Promise((resolve, reject) => req.session.destroy(error => error ? reject(error) : resolve()));
-}
-
-function clearCookie(res: Response): void {
-  res.clearCookie(sessionCookieName, { path: '/api/v1/auth', httpOnly: true, sameSite: 'lax', secure: environment.production });
 }
 
 export async function registerController(req: Request, res: Response): Promise<void> {
@@ -48,28 +40,23 @@ export async function resendController(req: Request, res: Response): Promise<voi
 
 export async function loginController(req: Request, res: Response): Promise<void> {
   const result = await auth.login(email(req), field(req, 'password', 256));
-  await new Promise<void>((resolve, reject) => req.session.regenerate(error => error ? reject(error) : resolve()));
-  req.session.auth = result.session;
-  req.session.cookie.maxAge = Math.max(0, result.session.expiresAt - Date.now());
-  await new Promise<void>((resolve, reject) => req.session.save(error => error ? reject(error) : resolve()));
+  await openAuth(req, res, result.session);
   res.json({ data: result.user });
 }
 
 export async function sessionController(req: Request, res: Response): Promise<void> {
-  const session = req.session.auth;
-  if (!session) { res.json({ data: null }); return; }
-  if (session.expiresAt <= Date.now()) {
-    await destroy(req);
-    clearCookie(res);
-    res.json({ data: null });
-    return;
-  }
+  const identity: AuthIdentity | null = res.locals['authIdentity'] ?? await readAuth(req, res);
+  if (!identity) { res.json({ data: null }); return; }
   try {
-    res.json({ data: await auth.currentUser(session.accessToken) });
+    const user = await auth.currentUser(identity.accessToken);
+    if (identity.subject && user.id !== identity.subject) {
+      throw new AuthError(401, 'SESION_INVALIDA', 'La sesión no es válida. Volvé a ingresar.');
+    }
+    res.json({ data: user });
   } catch (error) {
     if (!(error instanceof Error) || error.name !== 'NotAuthorizedException') throw error;
-    await destroy(req);
-    clearCookie(res);
+    await closeAuth(req, res);
+    if (res.locals['authIdentity']) throw new AuthError(401, 'SESION_INVALIDA', 'La sesión no es válida. Volvé a ingresar.');
     res.json({ data: null });
   }
 }
@@ -85,13 +72,11 @@ export async function resetController(req: Request, res: Response): Promise<void
 }
 
 export async function logoutController(req: Request, res: Response): Promise<void> {
-  const refreshToken = req.session.auth?.refreshToken;
-  await destroy(req);
-  clearCookie(res);
+  const refreshToken = await closeAuth(req, res);
   if (refreshToken) {
     try { await auth.revoke(refreshToken); }
     catch {
-      res.json({ data: { message: 'Cerramos la sesión en esta aplicación. No pudimos revocar el acceso remoto; intentá nuevamente si usás otros dispositivos.' } });
+      res.json({ data: { message: 'Cerramos la sesión en este navegador. No pudimos revocar el acceso remoto; podría seguir válido hasta su vencimiento.' } });
       return;
     }
   }
