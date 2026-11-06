@@ -44,14 +44,19 @@ Se sigue la separación Router → Controller → Service → Repository trabaja
 |---|---|---|
 | GET | `/api/v1/health` | Estado de la API y nombre del servicio |
 | GET | `/api/v1/plantillas` | Catálogo público de seis diseños |
+| GET | `/api/v1/perfil` | Perfil profesional del usuario autenticado por JWT |
+| PUT | `/api/v1/perfil` | Crear o reemplazar el perfil profesional completo |
+| DELETE | `/api/v1/perfil` | Eliminar el perfil profesional propio |
 
 Las respuestas usan `{ "data": ... }`. Los errores usan `{ "error": { "codigo": "...", "mensaje": "..." } }`. Las rutas inexistentes devuelven 404.
+
+El CRUD de perfil usa DynamoDB y el `sub` del access token Cognito verificado. Ver [contrato, validaciones, configuración y pruebas del perfil](Perfil.md). El DELETE devuelve 204 sin cuerpo. No se implementó CRUD de CV.
 
 El frontend consume `/api/v1/plantillas` con HttpClient. Su URL se configura en el frontend y los orígenes permitidos se configuran mediante `FRONTEND_ORIGINS` en el backend.
 
 ## Pendiente
 
-Modelo y operaciones CRUD de CV y persistencia según la entrega. Las rutas privadas se incorporarán con sus operaciones y controles de acceso. El despliegue AWS sigue pendiente.
+Modelo y operaciones CRUD de CV. El perfil ya se integra con Angular; la lectura real autenticada fue confirmada por el usuario. La integración de edición no se desplegó y las pruebas de escritura se hicieron con datos simulados.
 
 ## Acceso con Cognito
 

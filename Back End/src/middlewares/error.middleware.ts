@@ -1,7 +1,14 @@
 import type { ErrorRequestHandler } from 'express';
 import { cognitoError } from '../services/auth-error.js';
+import { ProfileError } from '../services/profile-error.js';
+import { MiloError } from '../services/milo-error.js';
 
 export const errorHandler: ErrorRequestHandler = (error: unknown, _req, res, _next) => {
+  if (error instanceof ProfileError || error instanceof MiloError) {
+    if (error instanceof MiloError && error.status === 429) res.setHeader('Retry-After', '60');
+    res.status(error.status).json({ error: { codigo: error.code, mensaje: error.message } });
+    return;
+  }
   const authError = cognitoError(error);
   if (authError) {
     res.status(authError.status).json({ error: { codigo: authError.code, mensaje: authError.message } });

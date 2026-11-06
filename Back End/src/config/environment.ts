@@ -29,6 +29,10 @@ export const environment = {
   port,
   host: process.env['HOST'] ?? '127.0.0.1',
   frontendOrigins,
+  dynamodb: {
+    region: process.env['AWS_REGION'] ?? 'us-east-1',
+    perfilesTable: process.env['DYNAMODB_PERFILES_TABLE']?.trim() ?? ''
+  },
   cognito: {
     region: process.env['COGNITO_REGION'] ?? 'us-east-1',
     clientId: process.env['COGNITO_CLIENT_ID'] ?? '',
