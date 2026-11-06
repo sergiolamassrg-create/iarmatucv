@@ -22,6 +22,10 @@ import { Component, Input, ChangeDetectionStrategy } from '@angular/core';
         @case ('user') { <circle cx="12" cy="8" r="4"/><path d="M4 21v-2a8 8 0 0 1 16 0v2"/> }
         @case ('logout') { <path d="M9 4H4v16h5m4-13 5 5-5 5m-5-5h10"/> }
         @case ('grid') { <rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/> }
+        @case ('mail') { <rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 6 9 7 9-7"/> }
+        @case ('phone') { <path d="m7 3 3 5-3 3a14 14 0 0 0 6 6l3-3 5 3-2 4C10 22 2 14 3 5l4-2Z"/> }
+        @case ('link') { <path d="m10 14 4-4m-6 5-2 2a4 4 0 0 1-6-6l4-4a4 4 0 0 1 6 0m4 2 2-2a4 4 0 0 1 6 6l-4 4a4 4 0 0 1-6 0" transform="translate(1 0)"/> }
+        @case ('location') { <path d="M19 10c0 5-7 11-7 11S5 15 5 10a7 7 0 0 1 14 0Z"/><circle cx="12" cy="10" r="2"/> }
       }
     </svg>
   `

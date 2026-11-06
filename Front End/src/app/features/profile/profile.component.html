@@ -1,0 +1,113 @@
+<header class="profile-heading">
+  <div><p class="eyebrow">TU HISTORIA, EN TUS PALABRAS</p><h1>Mi perfil profesional</h1>
+  <p>Reuní tu experiencia y tus habilidades. Podés completar tu información de a poco.</p></div>
+  <a routerLink="/panel" class="btn btn-outline">Volver al panel</a>
+</header>
+
+@switch (store.state().status) {
+  @case ('loading') { <div class="profile-notice" role="status" aria-live="polite">Cargando tu perfil…</div> }
+  @case ('error') {
+    <div class="profile-notice is-error" role="alert"><p>{{ store.state().message }}</p><button type="button" class="btn btn-outline" (click)="retry()">Volver a intentar</button></div>
+  }
+  @case ('expired') {
+    <div class="profile-notice is-error" role="alert"><p>{{ store.state().message }}</p><a routerLink="/acceso" class="btn btn-gradient">Iniciar sesión</a></div>
+  }
+  @case ('missing') {
+    @if (!creating) {
+      <div class="profile-notice empty-profile"><h2>Tu próximo capítulo empieza acá</h2><p>Todavía no creaste tu perfil profesional. Agregá tus datos para empezar.</p>
+      <button type="button" class="btn btn-gradient" (click)="creating = true">Crear mi perfil</button></div>
+    }
+  }
+}
+
+@if (store.state().status === 'ready' || (store.state().status === 'missing' && creating)) {
+  <div class="profile-workspace" [class.is-final]="step === 6">
+  <form #profileForm (submit)="save($event)" [attr.aria-busy]="store.saving" novalidate>
+    <fieldset [disabled]="store.saving">
+      <nav class="profile-steps" aria-label="Pasos del perfil profesional">
+        @for (label of steps; track label; let index = $index) {
+          <button type="button" class="profile-step" [class.is-current]="step === index" [attr.aria-current]="step === index ? 'step' : null" (click)="selectStep(index)"><span>{{ index + 1 }}</span><strong>{{ label }}</strong></button>
+        }
+        <button type="button" class="profile-step" [class.is-current]="step === 6" [attr.aria-current]="step === 6 ? 'step' : null" (click)="selectStep(6)"><span>PDF</span><strong>Vista previa</strong></button>
+      </nav>
+      <section id="perfil-datos" data-step="0" [hidden]="step !== 0" class="profile-card"><h2 tabindex="-1">Datos personales</h2><p>Estos datos forman parte de tu perfil profesional. No cambian tu acceso a Cognito.</p>
+        <app-profile-fields [model]="draft.datosPersonales" [fields]="personalFields" prefix="personal" (changed)="markDirty()" />
+      </section>
+      <section id="perfil-resumen" data-step="1" [hidden]="step !== 1" class="profile-card"><h2 tabindex="-1">Perfil profesional</h2>
+        <app-profile-fields [model]="draft.perfilProfesional" [fields]="professionalFields" prefix="professional" (changed)="markDirty()" />
+      </section>
+      @for (section of sections; track section.key) {
+        <section [id]="'perfil-' + section.key" [attr.data-step]="sectionStep(section.key)" [hidden]="step !== sectionStep(section.key)" class="profile-card">
+          <div class="section-heading"><h2 tabindex="-1">{{ section.title }}</h2><span>{{ draft[section.key].length }} elementos</span></div>
+          @for (item of draft[section.key]; track item; let index = $index) {
+            <div class="profile-item">
+              <div class="item-heading"><h3>{{ section.title }} · {{ index + 1 }}</h3><button class="remove-item" type="button" (click)="remove(section.key, index)" [attr.aria-label]="'Quitar ' + section.singular + ' ' + (index + 1)">Quitar</button></div>
+              <app-profile-fields [model]="item" [fields]="section.fields" [prefix]="section.key + '-' + index" (changed)="markDirty()" />
+            </div>
+          } @empty { <p class="section-empty">Todavía no agregaste información en esta sección.</p> }
+          <button class="btn btn-outline" type="button" (click)="add(section.key)" [disabled]="draft[section.key].length >= 100">+ Agregar {{ section.singular }}</button>
+        </section>
+      }
+      <section id="perfil-privacidad" data-step="5" [hidden]="step !== 5" class="profile-card"><h2 tabindex="-1">Privacidad y datos pendientes</h2><p>Estas preferencias se usan como valores iniciales del CV. Podés revisar qué datos incluir en la vista previa; tu perfil no se publica.</p>
+        <app-profile-fields [model]="draft.preferenciasPrivacidad" [fields]="privacyFields" prefix="privacy" (changed)="markDirty()" />
+        <app-profile-fields [model]="draft" [fields]="pendingFields" prefix="pending" (changed)="markDirty()" />
+      </section>
+      <section id="perfil-cv" data-step="6" [hidden]="step !== 6" class="profile-final">
+        <div class="profile-card cv-controls">
+          <h2 tabindex="-1">Vista previa de tu CV</h2>
+          <p>Elegí qué información incluir. La selección solo cambia este CV, sin modificar tu perfil guardado.</p>
+          <div class="cv-template-picker"><label for="cv-template">Plantilla</label><select id="cv-template" [(ngModel)]="cvOptions.template" [ngModelOptions]="standalone" (ngModelChange)="cvOptionsTouched = true">
+            @for (template of cvTemplates; track template.key) { <option [value]="template.key">{{ template.name }}</option> }
+          </select>
+          @for (template of cvTemplates; track template.key) { @if (cvOptions.template === template.key) { <p>{{ template.description }}</p> } }
+          <p>Sin fotografía. Revisá el PDF antes de enviarlo: la compatibilidad con cada ATS puede variar.</p></div>
+          <div class="cv-options" aria-label="Secciones a incluir">
+            @for (section of cvSections; track section.key; let index = $index) {
+              <div class="cv-option"><label><input type="checkbox" [(ngModel)]="cvOptions.sections[section.key]" [ngModelOptions]="standalone" (ngModelChange)="cvOptionsTouched = true" /> {{ section.label }}</label>
+              <div class="cv-order-actions"><button type="button" (click)="moveCvSection(index, -1)" [disabled]="index === 0" [attr.aria-label]="'Subir ' + section.label">↑</button><button type="button" (click)="moveCvSection(index, 1)" [disabled]="index === cvSections.length - 1" [attr.aria-label]="'Bajar ' + section.label">↓</button></div></div>
+            }
+          </div>
+          @if (cvOptions.template === 'moderna') { <p class="print-help">En la moderna, contacto, habilidades e idiomas quedan en la columna lateral. El orden se respeta dentro de cada columna.</p> }
+          <fieldset class="cv-contact-options"><legend>Datos de contacto</legend>
+            <label><input type="checkbox" [(ngModel)]="cvOptions.email" [ngModelOptions]="standalone" (ngModelChange)="cvOptionsTouched = true" /> Correo</label>
+            <label><input type="checkbox" [(ngModel)]="cvOptions.phone" [ngModelOptions]="standalone" (ngModelChange)="cvOptionsTouched = true" /> Teléfono</label>
+            <label><input type="checkbox" [(ngModel)]="cvOptions.location" [ngModelOptions]="standalone" (ngModelChange)="cvOptionsTouched = true" /> Ubicación</label>
+            <label><input type="checkbox" [(ngModel)]="cvOptions.fullLocation" [ngModelOptions]="standalone" (ngModelChange)="cvOptionsTouched = true" [disabled]="!cvOptions.location" /> Incluir ciudad y provincia</label>
+            <label><input type="checkbox" [(ngModel)]="cvOptions.links" [ngModelOptions]="standalone" (ngModelChange)="cvOptionsTouched = true" /> Enlaces profesionales</label>
+          </fieldset>
+          @if (exportIssues.length) { <p class="cv-export-warning" role="status">{{ exportIssues.join(' ') }} Podés guardar un borrador sin completar estos datos.</p> }
+          @if (store.dirty) { <p class="cv-export-warning">La vista previa incluye cambios sin guardar. Guardá el perfil si querés recuperarlos al volver.</p> }
+          @if (exportError) { <p class="save-error" role="alert">{{ exportError }}</p> }
+          <div class="cv-export-actions"><button type="button" class="btn btn-outline" (click)="selectStep(0)">Editar datos</button><button type="button" class="btn btn-gradient generate-pdf" (click)="generatePdf()" [disabled]="exportIssues.length > 0">Generar PDF</button></div>
+          <p class="print-help">Se abrirá la impresión del navegador. Elegí «Guardar como PDF», papel A4 y desactivá los encabezados y pies de página del navegador.</p>
+        </div>
+        @if (step === 6) { <app-profile-cv [document]="cvDocument" [template]="cvOptions.template" /> }
+      </section>
+      <div class="profile-step-actions"><button type="button" class="btn btn-outline" [disabled]="step === 0" (click)="selectStep(step - 1)">← Anterior</button><span>{{ step === 6 ? 'Vista previa / PDF' : 'Paso ' + (step + 1) + ' de ' + steps.length }}</span><button type="button" class="btn btn-gradient" [disabled]="step === 6" (click)="selectStep(step + 1)">{{ step === 5 ? 'Vista previa →' : 'Siguiente →' }}</button></div>
+      <div class="profile-save-bar">
+        <div class="save-status" aria-live="polite">
+          @if (error) { <p class="save-error" role="alert">{{ error }}</p> }
+          @else if (message) { <p class="save-success" role="status">{{ message }}</p> }
+          @else { <p>{{ store.dirty ? 'Tenés cambios sin guardar.' : 'Tus datos están al día.' }}</p> }
+        </div>
+        <div class="save-actions"><button type="button" class="btn btn-outline" (click)="reset()" [disabled]="!store.dirty">Descartar cambios</button>
+        <button class="btn btn-gradient" type="submit" [disabled]="!store.dirty && !creating">{{ store.saving ? 'Guardando…' : 'Guardar perfil' }}</button></div>
+      </div>
+    </fieldset>
+  </form>
+  <aside class="profile-side" aria-label="Resumen de tu perfil">
+    <section class="profile-card profile-outline"><h2>Tu recorrido</h2><p>{{ progress.completed }} de 6 secciones con información · {{ progress.percent }}%</p>
+      <progress [value]="progress.percent" max="100" aria-label="Secciones con información"></progress>
+      <p class="progress-note">Las secciones opcionales pueden quedar vacías; este indicador no bloquea la exportación.</p>
+      <ol>@for (label of steps; track label; let index = $index) { <li [class.is-current]="step === index"><span>{{ progress.steps[index] ? '✓' : index + 1 }}</span>{{ label }}</li> }</ol>
+    </section>
+    <section class="profile-card profile-preview"><h2>Tu información</h2><p>Un resumen de lo que estás editando.</p>
+      <div class="preview-person"><span class="profile-initials" aria-hidden="true">{{ avatar }}</span><div><h3>{{ fullName || 'Tu nombre' }}</h3><p>{{ draft.perfilProfesional['titulo'] || 'Tu título profesional' }}</p></div></div>
+      @if (draft.datosPersonales['email']) { <p class="preview-contact">{{ draft.datosPersonales['email'] }}</p> }
+      @if (draft.perfilProfesional['resumen']) { <p class="preview-summary">{{ draft.perfilProfesional['resumen'] }}</p> }
+      <dl><div><dt>Experiencias</dt><dd>{{ draft.experiencias.length }}</dd></div><div><dt>Estudios</dt><dd>{{ draft.educacion.length }}</dd></div><div><dt>Habilidades</dt><dd>{{ draft.habilidades.length }}</dd></div></dl>
+      <small>{{ store.dirty ? 'Los cambios de este resumen todavía no se guardaron.' : 'Información de tu perfil profesional.' }}</small>
+    </section>
+  </aside>
+  </div>
+}

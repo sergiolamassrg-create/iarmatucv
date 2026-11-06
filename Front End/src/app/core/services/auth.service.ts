@@ -30,6 +30,12 @@ export class AuthService {
 
   waitForSession() { return this.sessionResolved.pipe(take(1), map(() => this.user)); }
 
+  invalidateSession(): void {
+    this.sessionVersion++;
+    this.user = null;
+    this.resolveSession();
+  }
+
   login(email: string, password: string) {
     return this.post<AuthUser>('ingreso', { email, password }).pipe(tap(response => {
       this.sessionVersion++;

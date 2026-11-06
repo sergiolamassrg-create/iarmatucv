@@ -1,9 +1,10 @@
 <ng-template #navigation>
   <nav class="dashboard-nav" aria-label="Navegación de tu cuenta">
-    <a class="dashboard-nav-item is-active" routerLink="/panel" (click)="closeMenu()" aria-current="page"><app-icon name="grid" /> Inicio</a>
+    <a class="dashboard-nav-item" [class.is-active]="!isProfilePage && !isMiloPage" routerLink="/panel" (click)="closeMenu()" [attr.aria-current]="!isProfilePage && !isMiloPage ? 'page' : null"><app-icon name="grid" /> Inicio</a>
+    <a class="dashboard-nav-item" [class.is-active]="isProfilePage" routerLink="/panel/perfil" (click)="closeMenu()" [attr.aria-current]="isProfilePage ? 'page' : null"><app-icon name="user" /> Mi perfil</a>
     <a class="dashboard-nav-item" routerLink="/panel" fragment="mis-cv" (click)="closeMenu()"><app-icon name="file" /> Mis CV</a>
     <a class="dashboard-nav-item" routerLink="/" fragment="plantillas" (click)="closeMenu()"><app-icon name="eye" /> Plantillas</a>
-    <span class="dashboard-nav-item is-unavailable" aria-disabled="true"><app-icon name="spark" /> Asistente IA <small>Próximamente</small></span>
+    <a class="dashboard-nav-item" [class.is-active]="isMiloPage" routerLink="/panel/milo" (click)="closeMenu()" [attr.aria-current]="isMiloPage ? 'page' : null"><app-icon name="spark" /> Asistente IA <small>Experimental</small></a>
     <a class="dashboard-nav-item" routerLink="/panel" fragment="consejos" (click)="closeMenu()"><app-icon name="chat" /> Consejos</a>
     <a class="dashboard-nav-item" routerLink="/panel" fragment="mi-cuenta" (click)="closeMenu()"><app-icon name="user" /> Mi cuenta</a>
     <a class="dashboard-nav-item" routerLink="/" (click)="closeMenu()"><app-icon name="arrow" /> Volver al sitio</a>
@@ -16,7 +17,7 @@
       <a routerLink="/" fragment="plantillas" class="dashboard-promo-button fx-shine" (click)="closeMenu()">Explorar diseños <app-icon name="arrow" /></a>
     </div>
     @if (logoutError) { <p class="dashboard-error" role="alert">{{ logoutError }}</p> }
-    <button class="dashboard-exit" type="button" [disabled]="loggingOut" (click)="logout()"><app-icon name="logout" /> {{ loggingOut ? 'Cerrando sesión…' : 'Cerrar sesión' }}</button>
+    <button class="dashboard-exit" type="button" [disabled]="loggingOut || profile.saving" (click)="logout()"><app-icon name="logout" /> {{ loggingOut ? 'Cerrando sesión…' : 'Cerrar sesión' }}</button>
   </div>
 </ng-template>
 
@@ -43,12 +44,23 @@
     </header>
 
     <div class="dashboard-content">
+      <router-outlet />
+      @if (!isProfilePage && !isMiloPage) {
       <div class="dashboard-welcome">
         <p class="dashboard-eyebrow">UN NUEVO CAPÍTULO EMPIEZA ACÁ</p>
         <h1>{{ greeting }} <span aria-hidden="true">👋</span></h1>
         <p>Este es tu espacio en <strong>iArmatuCV</strong>. Dale forma a tu próximo paso, a tu ritmo.</p>
       </div>
 
+      <section class="dashboard-card dashboard-profile-summary" aria-label="Tu perfil profesional">
+        @switch (profile.state().status) {
+          @case ('loading') { <p role="status">Cargando tu perfil profesional…</p> }
+          @case ('ready') { <div><h2>Tu perfil profesional</h2><p>Tu información está disponible para que la revises y sigas completándola.</p></div><a class="btn btn-gradient" routerLink="/panel/perfil">Editar mi perfil →</a> }
+          @case ('missing') { <div><h2>Contá tu historia profesional</h2><p>Empezá con tus datos y completá tu experiencia a tu ritmo.</p></div><a class="btn btn-gradient" routerLink="/panel/perfil">Crear mi perfil →</a> }
+          @case ('expired') { <p role="alert">{{ profile.state().message }}</p><a class="btn btn-outline" routerLink="/acceso">Volver a ingresar</a> }
+          @case ('error') { <p role="alert">{{ profile.state().message }}</p><button type="button" class="btn btn-outline" (click)="profile.load()">Reintentar carga del perfil</button> }
+        }
+      </section>
       <div class="dashboard-lead-grid">
         <section class="dashboard-hero" aria-labelledby="dashboard-hero-title">
           <div class="dashboard-hero-text">
@@ -66,19 +78,19 @@
             <div class="dashboard-step-icon" aria-hidden="true"><app-icon name="check" /></div>
             <ol class="dashboard-steps">
               <li class="is-done"><span aria-hidden="true">✓</span> Cuenta conectada</li>
-              <li class="is-pending"><span aria-hidden="true">2</span> Crear tu primer CV <small>Próximamente</small></li>
-              <li class="is-pending"><span aria-hidden="true">3</span> Descargar tu CV <small>Próximamente</small></li>
+              <li><span aria-hidden="true">2</span> <a routerLink="/panel/perfil">Completar mi perfil</a></li>
+              <li><span aria-hidden="true">3</span> <a routerLink="/panel/perfil" [queryParams]="{ vista: 'cv' }">Preparar e imprimir mi CV</a></li>
             </ol>
           </div>
-          <p class="dashboard-small-note">Ya diste el primer paso. Estamos preparando el editor para lo que viene.</p>
+          <p class="dashboard-small-note">Guardá tu perfil y elegí qué información incluir en tu CV.</p>
         </section>
       </div>
 
       <section class="dashboard-actions" aria-label="Accesos rápidos">
-        <button type="button" class="dashboard-action" disabled><span class="dashboard-action-icon lilac"><app-icon name="file" /></span><span class="dashboard-action-copy"><strong>Crear CV</strong><small>Próximamente</small></span></button>
+        <a class="dashboard-action" routerLink="/panel/perfil"><span class="dashboard-action-icon lilac"><app-icon name="file" /></span><span class="dashboard-action-copy"><strong>Preparar mi CV</strong><small>Completar mi perfil</small></span></a>
         <a class="dashboard-action" routerLink="/" fragment="plantillas"><span class="dashboard-action-icon sky"><app-icon name="eye" /></span><span class="dashboard-action-copy"><strong>Explorar plantillas</strong><small>Encontrá tu estilo</small></span><app-icon name="chevron" /></a>
         <button type="button" class="dashboard-action" disabled><span class="dashboard-action-icon rose"><app-icon name="spark" /></span><span class="dashboard-action-copy"><strong>Mejorar con IA</strong><small>Próximamente</small></span></button>
-        <button type="button" class="dashboard-action" disabled><span class="dashboard-action-icon amber"><app-icon name="arrow" /></span><span class="dashboard-action-copy"><strong>Descargar CV</strong><small>Se habilitará con tus CV</small></span></button>
+        <a class="dashboard-action" routerLink="/panel/perfil" [queryParams]="{ vista: 'cv' }"><span class="dashboard-action-icon amber"><app-icon name="arrow" /></span><span class="dashboard-action-copy"><strong>Vista previa / PDF</strong><small>Desde tu perfil</small></span></a>
       </section>
 
       <div class="dashboard-bottom-grid">
@@ -87,7 +99,7 @@
           <div class="dashboard-empty-state">
             <span class="dashboard-empty-icon" aria-hidden="true"><app-icon name="file" /></span>
             <h3>Un espacio para tus próximos CV</h3>
-            <p>Acá vas a encontrar tus currículums. Estamos preparando el editor para que puedas crear y guardar el primero.</p>
+            <p>La biblioteca de currículums guardados estará disponible más adelante. Ya podés preparar e imprimir un CV desde tu perfil.</p>
             <a routerLink="/" fragment="plantillas" class="dashboard-text-link">Conocé los diseños <app-icon name="arrow" /></a>
           </div>
         </section>
@@ -103,6 +115,7 @@
         <div><p class="dashboard-eyebrow">TU CUENTA</p><h2 id="account-title">Tu lugar en iArmatuCV</h2></div>
         <dl class="dashboard-profile-details"><div><dt>Correo electrónico</dt><dd>{{ auth.user?.email || 'Sin correo disponible' }}</dd></div><div><dt>Estado del correo</dt><dd><span class="dashboard-account-status" [class.is-verified]="auth.user?.emailVerified">{{ auth.user?.emailVerified ? 'Verificado' : 'Sin verificar' }}</span></dd></div></dl>
       </section>
+      }
       <footer class="dashboard-footer"><span>Tu historia merece un buen comienzo.</span><a routerLink="/">Volver al sitio <app-icon name="arrow" /></a></footer>
     </div>
   </div>

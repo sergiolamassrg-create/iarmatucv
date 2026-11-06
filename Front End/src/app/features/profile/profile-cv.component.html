@@ -1,0 +1,57 @@
+<ng-template #contacts>
+  <ul class="cv-contact">
+    @for (contact of document.contact; track $index) {
+      <li>
+        @if (template === 'moderna') { <app-icon [name]="contactIcon(contact)" /> }
+        @if (hrefFor(contact); as href) { <a [href]="href" [attr.target]="href.startsWith('http') ? '_blank' : null" rel="noopener noreferrer">{{ contact }}</a> }
+        @else { <span>{{ contact }}</span> }
+      </li>
+    }
+  </ul>
+</ng-template>
+
+<ng-template #sectionContent let-section>
+  <section class="cv-section" [attr.data-cv-section]="section.key">
+    <h2>{{ section.title }}</h2>
+    @if (section.key === 'habilidades') {
+      <ul class="cv-skills">
+        @for (entry of section.entries; track $index; let last = $last) {
+          <li><strong>{{ entry.title }}</strong>@if (entry.subtitle) { <span> ({{ entry.subtitle }})</span> }@if (entry.dates) { <span> · {{ entry.dates }}</span> }@for (line of entry.lines; track $index) { <span> · {{ line }}</span> }@if (!last) { <span>; </span> }</li>
+        }
+      </ul>
+    } @else {
+      @for (entry of section.entries; track $index) {
+        <div class="cv-entry">
+          @if (entry.title) { <h3>{{ entry.title }}</h3> }
+          @if (entry.subtitle) { <p class="cv-subtitle">{{ entry.subtitle }}</p> }
+          @if (entry.dates) { <p class="cv-dates">{{ entry.dates }}</p> }
+          @for (line of entry.lines; track $index) {
+            <p class="cv-line">@if (lineHref(line); as href) { <a [href]="href" target="_blank" rel="noopener noreferrer">{{ line }}</a> } @else { {{ line }} }</p>
+          }
+        </div>
+      }
+    }
+  </section>
+</ng-template>
+
+<article class="cv-paper" [class.cv-modern]="template === 'moderna'" [class.with-sidebar]="hasSidebar" [attr.data-template]="template" aria-label="Vista previa del currículum">
+  <header class="cv-header">
+    @if (template === 'moderna' && initials) { <span class="cv-monogram" aria-hidden="true">{{ initials }}</span> }
+    <div class="cv-identity">
+      @if (document.name) { <h1>{{ document.name }}</h1> }
+      @if (document.title) { <p class="cv-title">{{ document.title }}</p> }
+    </div>
+  </header>
+  @if (template === 'ats' && document.contact.length) { <ng-container [ngTemplateOutlet]="contacts" /> }
+  <div class="cv-columns">
+    @if (hasSidebar) {
+      <aside class="cv-sidebar">
+        @if (document.contact.length) { <section class="cv-section"><h2>Contacto</h2><ng-container [ngTemplateOutlet]="contacts" /></section> }
+        @for (section of sideSections; track section.key) { <ng-container [ngTemplateOutlet]="sectionContent" [ngTemplateOutletContext]="{ $implicit: section }" /> }
+      </aside>
+    }
+    <div class="cv-main">
+      @for (section of mainSections; track section.key) { <ng-container [ngTemplateOutlet]="sectionContent" [ngTemplateOutletContext]="{ $implicit: section }" /> }
+    </div>
+  </div>
+</article>

@@ -10,7 +10,7 @@ El ingreso correcto desde `/acceso` navega a `/panel`. Se adaptó el boceto de `
 - Tema compartido entre portada, acceso y panel.
 - Cierre de sesión con estado de espera y mensaje de error que permite reintentar.
 
-Crear, guardar, mejorar con IA y descargar CV siguen pendientes. Se identifican como próximas funciones y sus botones están deshabilitados. No se agregaron base de datos, CRUD ni métricas ficticias.
+El perfil profesional se consulta y edita desde `/panel/perfil`, reutilizando el CRUD de DynamoDB y la autenticación JWT; ver [integración del perfil](Perfil-Angular.md). Desde el panel se puede preparar un CV y abrir su [vista previa / impresión PDF](Perfil-PDF.md). La biblioteca de CV guardados e IA siguen pendientes. No se muestran métricas ficticias.
 
 El contrato actual de usuario contiene `id`, `username`, `nickname`, `email` y `emailVerified`. El backend obtiene `nickname` de los atributos de Cognito. La bienvenida y la etiqueta de la cuenta usan ese apodo completo, sin recortarlo ni deducirlo del correo. Si está ausente o vacío, se muestra un saludo general y «Mi cuenta». Después de actualizar el backend, volver a iniciar sesión para renovar los datos de una sesión local existente.
 

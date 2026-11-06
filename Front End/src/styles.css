@@ -387,3 +387,31 @@ app-cv-preview { display: block; }
   html { scroll-behavior: auto; }
   *, *::before, *::after { animation: none !important; transition: none !important; }
 }
+@media print {
+  @page { size: A4; margin: 16mm; }
+  html.profile-printing { background: #fff; color-scheme: light; }
+  body.profile-printing { margin: 0; background: #fff; color: #171717; }
+  body.profile-printing app-root,
+  body.profile-printing main,
+  body.profile-printing .dashboard-layout,
+  body.profile-printing .dashboard-main-area,
+  body.profile-printing .dashboard-content,
+  body.profile-printing .profile-workspace { display: block; min-height: 0; margin: 0; padding: 0; width: auto; max-width: none; background: #fff; }
+  body.profile-printing .skip-link,
+  body.profile-printing app-header,
+  body.profile-printing app-footer,
+  body.profile-printing .dashboard-sidebar,
+  body.profile-printing .dashboard-topbar,
+  body.profile-printing .dashboard-footer,
+  body.profile-printing .profile-heading,
+  body.profile-printing .profile-steps,
+  body.profile-printing .profile-side,
+  body.profile-printing .profile-step-actions,
+  body.profile-printing .profile-save-bar,
+  body.profile-printing .cv-controls,
+  body.profile-printing section[data-step]:not([data-step="6"]) { display: none !important; }
+  body.profile-printing .profile-final,
+  body.profile-printing app-profile-cv { display: block; max-width: none; margin: 0; padding: 0; }
+  body.profile-printing form,
+  body.profile-printing fieldset { margin: 0; padding: 0; border: 0; min-width: 0; }
+}

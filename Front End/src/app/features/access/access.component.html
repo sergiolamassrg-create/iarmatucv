@@ -4,7 +4,7 @@
     <h1 id="access-title">Un espacio para tu historia. Un CV <span class="gradient-text">muy vos.</span></h1>
     <p class="access-description">Tu próximo paso empieza acá. Creá tu cuenta o ingresá para continuar construyendo tu recorrido profesional.</p>
     <ul class="access-benefits">
-      <li>Guardá y editá tus currículums</li>
+      <li>Guardá y editá tu perfil profesional</li>
       <li>Usá plantillas profesionales</li>
       <li>Retomá tus avances cuando lo necesites</li>
       <li>Accedé desde cualquier dispositivo</li>
@@ -21,7 +21,7 @@
         <span class="access-pill">✦ Tu cuenta</span>
         <h2>¡Qué bueno verte!</h2>
         <p>Ingresaste con <strong>{{ user.email || user.username }}</strong>.</p>
-        <p class="access-message" role="status">Tu sesión está activa. La gestión de currículums se incorporará en la próxima etapa.</p>
+        <p class="access-message" role="status">Tu sesión está activa. Podés completar tu perfil y preparar tu CV desde tu espacio.</p>
         <a class="btn btn-gradient access-submit" routerLink="/panel">Ir a mi espacio →</a>
         <button class="btn btn-outline access-submit" type="button" (click)="logout()" [disabled]="busy">{{ busy ? 'Cerrando sesión…' : 'Cerrar sesión' }}</button>
         @if (error) { <p class="access-error" role="alert">{{ error }}</p> }

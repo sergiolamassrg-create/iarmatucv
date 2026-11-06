@@ -154,3 +154,6 @@
   .dashboard-profile-details { display: grid; gap: 16px; }
   .dashboard-text-link { min-height: 44px; text-align: left; }
 }
+
+.dashboard-profile-summary { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px; margin-bottom: 24px; }
+.dashboard-profile-summary p { margin: 8px 0 0; font-size: 14px; }

@@ -1,15 +1,17 @@
 import { ChangeDetectionStrategy, Component, DestroyRef, ElementRef, HostListener, OnDestroy, ViewChild, inject } from '@angular/core';
 import { NgTemplateOutlet } from '@angular/common';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { Router, RouterLink } from '@angular/router';
+import { Router, RouterLink, RouterOutlet } from '@angular/router';
 import { firstValueFrom } from 'rxjs';
 import { AuthService } from '../../core/services/auth.service';
 import { ThemeService } from '../../core/services/theme.service';
 import { UiIconComponent } from '../../shared/ui-icon/ui-icon.component';
+import { ProfileService } from '../../core/services/profile.service';
 
 @Component({
   selector: 'app-dashboard',
-  imports: [RouterLink, NgTemplateOutlet, UiIconComponent],
+  imports: [RouterLink, RouterOutlet, NgTemplateOutlet, UiIconComponent],
+  providers: [ProfileService],
   changeDetection: ChangeDetectionStrategy.Eager,
   templateUrl: './dashboard.component.html',
   styleUrl: './dashboard.component.css'
@@ -17,6 +19,7 @@ import { UiIconComponent } from '../../shared/ui-icon/ui-icon.component';
 export class DashboardComponent implements OnDestroy {
   readonly auth = inject(AuthService);
   readonly theme = inject(ThemeService);
+  readonly profile = inject(ProfileService);
   private readonly router = inject(Router);
   private readonly destroyRef = inject(DestroyRef);
   @ViewChild('mobileMenu') private mobileMenu!: ElementRef<HTMLDialogElement>;
@@ -28,6 +31,9 @@ export class DashboardComponent implements OnDestroy {
   get displayName(): string {
     return this.auth.user?.nickname?.trim() ?? '';
   }
+
+  get isProfilePage(): boolean { return this.router.url.split(/[?#]/, 1)[0].replace(/\/+$/, '') === '/panel/perfil'; }
+  get isMiloPage(): boolean { return this.router.url.split(/[?#]/, 1)[0].replace(/\/+$/, '') === '/panel/milo'; }
 
   get initials(): string { return Array.from(this.displayName || 'Mi cuenta')[0].toLocaleUpperCase('es-AR'); }
   get greeting(): string { return this.displayName ? `¡Hola, ${this.displayName}!` : '¡Qué bueno verte!'; }
@@ -59,11 +65,12 @@ export class DashboardComponent implements OnDestroy {
   }
 
   async logout(): Promise<void> {
-    if (this.loggingOut) return;
+    if (this.loggingOut || this.profile.saving || !this.profile.confirmLeave()) return;
     this.loggingOut = true;
     this.logoutError = '';
     try {
       await firstValueFrom(this.auth.logout().pipe(takeUntilDestroyed(this.destroyRef)));
+      this.profile.dirty = false;
       if (!this.destroyRef.destroyed) await this.router.navigateByUrl('/acceso', { replaceUrl: true });
     } catch (error) {
       if (!this.destroyRef.destroyed) this.logoutError = this.auth.errorMessage(error);

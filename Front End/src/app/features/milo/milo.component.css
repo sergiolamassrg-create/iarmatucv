@@ -1,0 +1,14 @@
+:host { display: block; }
+.milo-card { padding: clamp(1rem, 3vw, 2rem); border: 1px solid var(--line); border-radius: 24px; background: var(--surface); color: var(--ink); }
+header, .milo-form-actions { display: flex; align-items: center; justify-content: space-between; gap: 1rem; flex-wrap: wrap; }
+h1 { font-size: clamp(1.3rem, 3vw, 1.8rem); }
+.milo-note, small { color: var(--muted); }
+.milo-conversation { max-height: 55vh; overflow-y: auto; margin-block: 1.5rem; display: grid; gap: 1rem; }
+.milo-turn { border: 1px solid var(--line); border-radius: 16px; padding: 1rem; margin-right: 8%; }
+.milo-user { margin-right: 0; margin-left: 8%; background: var(--soft); }
+.milo-turn p { white-space: pre-wrap; overflow-wrap: anywhere; margin: .5rem 0 0; }
+label { display: block; margin-bottom: .5rem; font-weight: 600; }
+textarea { width: 100%; border: 1px solid var(--line); border-radius: 12px; padding: .8rem; background: var(--surface); color: inherit; resize: vertical; }
+textarea:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+.milo-form-actions { margin-top: .7rem; }
+.milo-error { color: var(--ink); border-left: 3px solid var(--focus); padding-left: .7rem; }

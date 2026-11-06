@@ -61,11 +61,11 @@ Implementado: portada Angular basada en el boceto original con ilustración, fue
 
 Se integraron los formularios de acceso con Cognito a través del backend Express existente: registro, confirmación, ingreso, recuperación, nueva contraseña y sesión con cookie HttpOnly. Completar el Client Secret del app client en `Back End/.env` si corresponde y revisar [la configuración de Cognito](docs/Cognito.md). La prueba con una cuenta real requiere esa configuración; no se crearon cuentas de prueba en AWS.
 
-El ingreso abre el [panel personal responsive](docs/Dashboard.md), con datos de la cuenta, navegaci?n y temas compartidos. La creaci?n y descarga de CV se muestran como pr?ximas funciones.
+El ingreso abre el [panel personal responsive](docs/Dashboard.md), con datos de la cuenta, navegación y temas compartidos. El [editor de perfil](docs/Perfil-Angular.md) consulta y guarda en DynamoDB mediante Express y JWT Cognito. Incluye seis pasos y una pantalla final de [vista previa e impresión PDF A4](docs/Perfil-PDF.md), con selección de secciones y contactos.
 
-Pendiente: CRUD de CV, persistencia, autorización por propietario y despliegue. No se guardan CV ni se simulan cuentas. Las rutas de CV se incorporarán al implementar sus operaciones. Un healthcheck correcto **solo indica que la API responde**.
+Pendiente: CRUD y persistencia de varios CV, aplicar las plantillas visuales a documentos reales y desplegar esta ampliación. No se guardan CV como entidades separadas; el perfil se consulta y modifica únicamente por el sub validado del usuario. Un healthcheck correcto **solo indica que la API responde**.
 
-No se implementan IA, generación PDF ni Google federado. No se crearon ni desplegaron recursos AWS durante estos cambios.
+El PDF se obtiene con la impresión del navegador, sin servicios externos. Incluye [ATS Clásica y Profesional Moderna](docs/Plantillas-CV.md), orden de secciones y enlaces clicables. IA, fotos y Google federado siguen pendientes. No se crearon ni desplegaron recursos AWS durante estos cambios.
 
 ## Documentación vigente
 
@@ -73,4 +73,4 @@ No se implementan IA, generación PDF ni Google federado. No se crearon ni despl
 - [Frontend](Front%20End/README.md).
 - [Backend](Back%20End/README.md).
 
-La decisión vigente conserva Express/TypeScript también en Lambda Node.js, sin migración a Python. La base de datos queda pendiente según la entrega; no se implementó DynamoDB ni CRUD en esta etapa. El acceso local mantiene su modo de sesiones y Lambda utiliza JWT en cookies HttpOnly. Los originales de `Arquitectura AWS` se conservan como documentación histórica.
+La decisión vigente conserva Express/TypeScript también en Lambda Node.js, sin migración a Python. El perfil usa la tabla DynamoDB existente; el CRUD de CV sigue pendiente. El login local conserva el modo de sesiones; el CRUD de perfil y Lambda utilizan JWT en cookies HttpOnly o Bearer. Los originales de `Arquitectura AWS` se conservan como documentación histórica.

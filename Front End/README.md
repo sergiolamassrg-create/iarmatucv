@@ -1,6 +1,6 @@
 # iArmatuCV — Front End
 
-Angular 22, TypeScript 6.0 y HTML/CSS nativo. Aplicación SPA sin Bootstrap, React ni herramientas de diseño adicionales.
+Angular 22, TypeScript 6.0 y HTML/CSS. Aplicación SPA con estilos propios; el editor de perfil utiliza la grilla CSS de Bootstrap encapsulada, sin su JavaScript ni estilos globales.
 
 ## Comandos propios
 
@@ -32,6 +32,7 @@ Ver [auditoría, preparación AWS y procedimiento propuesto](../docs/Preparacion
 | `/` | Portada animada, seis diseños seleccionables, vista previa y preguntas |
 | `/acceso` | Ingreso, registro, confirmación, recuperación y sesión con Cognito a través de la API |
 | `/panel` | Espacio personal protegido: bienvenida, cuenta, plantillas y funciones futuras |
+| `/panel/perfil` | Consulta y edición del perfil profesional propio con cookies JWT |
 | `/estado` | Consume el healthcheck del backend mediante HttpClient |
 | Otra | Página de recurso no encontrado |
 
@@ -67,9 +68,11 @@ Completar la configuración privada en `../Back End/.env` y revisar los pasos de
 
 La URL pública vive en `src/environments/environment.ts`. No colocar credenciales ni claves AWS. Si cambia el puerto de Express, actualizar la URL; si cambia el origen de Angular, actualizar `FRONTEND_ORIGINS` del backend. El frontend no se conecta a PostgreSQL.
 
-Los servicios usan Observable de HttpClient con un límite de espera de cinco segundos. `/estado` consulta `/api/v1/health` y la galería de inicio obtiene sus diseños desde `/api/v1/plantillas`. El catálogo se mantiene en el backend; no se duplica en Angular. La galería muestra carga, error con reintento y catálogo vacío si corresponde.
+Los servicios usan Observable de HttpClient: catálogo y estado tienen un límite de espera de cinco segundos, acceso de 25 y perfil de 30. `/estado` consulta `/api/v1/health` y la galería de inicio obtiene sus diseños desde `/api/v1/plantillas`. El catálogo se mantiene en el backend; no se duplica en Angular. La galería muestra carga, error con reintento y catálogo vacío si corresponde.
 
 ## Diseño
+
+El perfil profesional se integra con GET/PUT del backend desde el dashboard. Ver [flujo, archivos, ejecución local y verificaciones](../docs/Perfil-Angular.md). Requiere `AUTH_MODE=jwt` en el backend; el formulario conserva campos internos que todavía no tienen controles visibles. La pantalla final permite [componer e imprimir un CV A4 como PDF](../docs/Perfil-PDF.md), sin agregar persistencia de CV ni eliminación del perfil completo.
 
 Se consultaron los bocetos y la botonera v3 dentro de `../Arquitectura AWS/02-iarmatucv-boceto/`. Se conservan paleta, gradiente, marca, tarjetas, ejemplos de CV y temas, implementados como componentes y CSS legible. Los originales no fueron editados.
 
@@ -77,8 +80,8 @@ La portada recupera la ilustración del boceto original, copiada a `public/asset
 
 La galería usa un componente Angular reutilizable con seis variantes visuales. La selección actual se mantiene en memoria y actualiza el nombre y la descripción mediante binding. Un dialog HTML nativo permite ampliar la referencia y comparar con botones o flechas de teclado; Escape cierra la vista. La selección no se aplica a un CV ni se persiste. El diálogo contiene el foco y el cierre devuelve al control que lo abrió.
 
-El movimiento usa CSS nativo: entrada de portada, flotación suave de la ilustración, destellos, brillo de botones, efectos de hover/foco y transiciones del tema. `prefers-reduced-motion` desactiva estas animaciones. No se agregaron librerías visuales ni dependencias de animación.
+El movimiento usa CSS nativo: entrada de portada, flotación suave de la ilustración, destellos, brillo de botones, efectos de hover/foco y transiciones del tema. `prefers-reduced-motion` desactiva estas animaciones. No se agregaron dependencias de animación.
 
-Los diseños usan datos ficticios y la ilustración representa la visión del producto. IA, PDF, edición y guardado siguen pendientes; no se presentan cifras ficticias como métricas reales. El acceso requiere la configuración de Cognito indicada arriba.
+La galería de diseños usa datos ficticios; su selección todavía no se aplica al CV real. El editor guarda el perfil y la pantalla final permite elegir [ATS Clásica o Profesional Moderna](../docs/Plantillas-CV.md), ordenar secciones e imprimir A4 con los datos elegidos y enlaces clicables. IA, fotos y múltiples CV guardados siguen pendientes. No se presentan cifras ficticias como métricas reales. El acceso requiere la configuración de Cognito indicada arriba.
 
 La preferencia de tema es el único dato guardado en localStorage. La sesión usa una cookie HttpOnly y datos del lado servidor; el frontend no persiste credenciales, tokens ni CV. El almacenamiento bloqueado no debe impedir navegar por las páginas públicas. Se incluyen foco visible, enlace para saltar al contenido y movimiento reducido; esto no equivale a certificación de accesibilidad.

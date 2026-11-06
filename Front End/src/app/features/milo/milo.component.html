@@ -1,0 +1,19 @@
+<section class="milo-card" aria-labelledby="milo-title">
+  <header><div><p class="eyebrow">VERSIÓN EXPERIMENTAL</p><h1 id="milo-title">Milo — Asistente de iArmatuCV</h1></div><button type="button" class="btn btn-outline" (click)="clear()" [disabled]="busy">Limpiar conversación</button></header>
+  <p>Probá con datos ficticios o no sensibles. Tus mensajes y los últimos turnos se envían a Google Gemini. No incluyas datos de contacto ni información confidencial.</p>
+  <p class="milo-note">La conversación se mantiene en memoria y se reinicia al salir o recargar. Milo no consulta ni modifica tu perfil. Revisá sus recomendaciones antes de usarlas.</p>
+  <div class="milo-conversation" role="log" aria-label="Conversación con Milo" aria-live="polite" [attr.aria-busy]="busy">
+    <article class="milo-turn"><strong>Milo</strong><p>¡Hola! Soy Milo. Puedo ayudarte con tu CV, entrevistas y búsqueda de empleo. ¿Qué te gustaría trabajar hoy?</p></article>
+    @for (turn of turns; track $index) {
+      <article class="milo-turn" [class.milo-user]="turn.role === 'user'"><strong>{{ turn.role === 'user' ? 'Vos' : 'Milo' }}</strong><p>{{ turn.text }}</p></article>
+    }
+  </div>
+  @if (busy) { <p role="status">Milo está preparando una respuesta…</p> }
+  @if (error) { <p class="milo-error" role="alert">{{ error }}</p> }
+  @if (expired) { <a routerLink="/acceso" class="btn btn-outline">Volver a ingresar</a> }
+  <form (ngSubmit)="send()">
+    <label for="milo-message">Tu consulta</label>
+    <textarea id="milo-message" name="message" [(ngModel)]="message" maxlength="1000" rows="4" required [disabled]="busy || expired" aria-describedby="milo-count" placeholder="Por ejemplo: ¿cómo describo un proyecto académico en mi CV?"></textarea>
+    <div class="milo-form-actions"><small id="milo-count">{{ message.length }}/1000 caracteres</small><button type="submit" class="btn btn-gradient" [disabled]="!canSend">{{ busy ? 'Esperando…' : 'Enviar' }}</button></div>
+  </form>
+</section>
