@@ -1,4 +1,9 @@
 :host { display: block; }
+.profile-library-links { display: flex; align-items: center; justify-content: space-between; gap: 20px; border: 1px solid var(--line); background: var(--soft); border-radius: 16px; padding: 20px; margin-bottom: 24px; }
+.profile-library-links p { margin: 6px 0 0; font-size: 13px; }
+.profile-library-links .btn { flex-shrink: 0; }
+@media (max-width: 760px) { .profile-library-links { align-items: stretch; flex-direction: column; } }
+@media print { .profile-library-links { display: none !important; } }
 .profile-heading { display: flex; justify-content: space-between; align-items: flex-start; gap: 20px; margin-bottom: 24px; }
 h1 { font-size: clamp(29px, 3vw, 40px); margin: 8px 0; }
 .eyebrow { color: var(--link); font-size: 11px; font-weight: 750; letter-spacing: .1em; }

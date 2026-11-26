@@ -1,0 +1,65 @@
+<header class="curriculum-heading curriculum-controls">
+  <div><p class="eyebrow">UNA VERSIÓN PARA CADA OBJETIVO</p><h1>{{ selected() ? draft().titulo : 'Nuevo CV' }}</h1>
+    <p>Los datos personales vienen de tu perfil común. Lo que guardes acá pertenece únicamente a este CV.</p></div>
+  <a class="btn btn-outline" routerLink="/panel/curriculums">Volver a Mis CV</a>
+</header>
+@if (loading()) { <p role="status">Cargando esta versión…</p> }
+@if (error()) { <div class="curriculum-notice curriculum-controls" role="alert">{{ error() }} <button type="button" class="btn btn-outline" (click)="reload()">Recargar CV</button></div> }
+@if (message()) { <p class="curriculum-controls" role="status">{{ message() }}</p> }
+@if (!loading()) {
+<div class="curriculum-controls curriculum-tabs">
+  <button type="button" class="btn btn-outline" (click)="preview.set(false)" [attr.aria-pressed]="!preview()">Editar contenido</button>
+  <button type="button" class="btn btn-outline" (click)="preview.set(true)" [attr.aria-pressed]="preview()">Vista previa / PDF</button>
+  <a routerLink="/panel/perfil" class="btn btn-outline">Datos personales comunes</a>
+</div>
+<form class="curriculum-controls curriculum-form" [formGroup]="form" (ngSubmit)="save()" [hidden]="preview()">
+  <fieldset [disabled]="workspace.saving()">
+    <label for="curriculum-title">Nombre interno del CV</label><input id="curriculum-title" formControlName="titulo" maxlength="120" placeholder="Ejemplo: Sergio - CV para soporte" aria-describedby="curriculum-title-help" />
+    <p id="curriculum-title-help">Sirve para identificar esta versión en Mis CV. No aparece en el cuerpo ni en el PDF.</p>
+    <label for="curriculum-professional-title">Cargo o especialidad profesional (opcional)</label><input id="curriculum-professional-title" formControlName="tituloProfesional" maxlength="120" placeholder="Ejemplo: Analista de Operaciones" aria-describedby="curriculum-professional-title-help" />
+    <p id="curriculum-professional-title-help">Aparece debajo de tu nombre en el CV. Dejalo vacío si preferís no mostrarlo.</p>
+    <label for="curriculum-summary">Resumen orientado a ese trabajo</label><textarea id="curriculum-summary" formControlName="resumen" maxlength="1500" rows="5"></textarea>
+    <h2>Experiencias para este CV</h2>
+    <div formArrayName="experiencias">
+    @for (entry of experiences.controls; track entry; let index = $index) {
+      <section class="curriculum-entry" [formGroupName]="index"><h3>Experiencia {{ index + 1 }}</h3>
+        <label [for]="'cv-company-' + index">Empresa</label><input [id]="'cv-company-' + index" formControlName="empresa" maxlength="120" />
+        <label [for]="'cv-position-' + index">Puesto</label><input [id]="'cv-position-' + index" formControlName="puesto" maxlength="120" />
+        <label [for]="'cv-description-' + index">Qué hiciste y qué querés destacar</label><textarea [id]="'cv-description-' + index" formControlName="descripcion" maxlength="800" rows="3"></textarea>
+        <div class="curriculum-dates"><label>Desde<input formControlName="fechaInicio" placeholder="2024-03" maxlength="40" /></label><label>Hasta<input formControlName="fechaFin" [readOnly]="entry.controls.actual.value" placeholder="2026-01" maxlength="40" /></label></div>
+        <label class="curriculum-checkbox"><input type="checkbox" formControlName="actual" /> Es mi trabajo actual</label>
+        <button type="button" class="btn btn-outline" (click)="removeExperience(index)">Quitar de este CV</button>
+      </section>
+    }
+    </div>
+    <button type="button" class="btn btn-outline" [disabled]="experiences.length >= 12" (click)="addExperience()">Agregar experiencia</button>
+    <h2>Educación</h2><div formArrayName="educacion">
+    @for (entry of education.controls; track entry; let index = $index) {
+      <section class="curriculum-entry" [formGroupName]="index"><h3>Estudio {{ index + 1 }}</h3>
+        <label [for]="'cv-institution-' + index">Institución</label><input [id]="'cv-institution-' + index" formControlName="institucion" maxlength="120" />
+        <label [for]="'cv-degree-' + index">Título o formación</label><input [id]="'cv-degree-' + index" formControlName="titulo" maxlength="160" />
+        <div class="curriculum-dates"><label>Desde<input formControlName="fechaInicio" maxlength="40" /></label><label>Hasta<input formControlName="fechaFin" maxlength="40" /></label></div>
+        <button type="button" class="btn btn-outline" (click)="removeEducation(index)">Quitar de este CV</button>
+      </section>
+    }
+    </div>
+    <button type="button" class="btn btn-outline" [disabled]="education.length >= 12" (click)="addEducation()">Agregar educación</button>
+    <label for="curriculum-skills">Habilidades para este trabajo — una por línea, hasta 12</label><textarea id="curriculum-skills" formControlName="habilidades" maxlength="1300" rows="5"></textarea>
+    <div class="curriculum-actions"><button class="btn btn-gradient" type="submit">{{ workspace.saving() ? 'Guardando…' : 'Guardar este CV' }}</button>
+      <span>{{ workspace.dirty() ? 'Tenés cambios sin guardar en esta versión.' : 'Esta versión no tiene cambios pendientes.' }}</span></div>
+  </fieldset>
+</form>
+@if (preview()) {
+  <section class="curriculum-controls curriculum-export">
+    <h2>Un mismo CV, el diseño que prefieras</h2>
+    <p>Elegí ATS Clásica o Profesional Moderna sin duplicar el CV ni volver a cargar sus datos. Guardá para recordar la elección de esta versión.</p>
+    <label for="curriculum-template">Plantilla de este CV</label><select id="curriculum-template" [formControl]="template" [attr.disabled]="workspace.saving() ? '' : null">@for (item of templates; track item.key) { <option [value]="item.key">{{ item.name }}</option> }</select>
+    @for (issue of exportIssues; track issue) { <p role="status">{{ issue }}</p> }
+    @if (workspace.dirty() || !selected()) { <p>Guardá este CV antes de exportarlo.</p><button type="button" class="btn btn-gradient" (click)="save()" [disabled]="workspace.saving()">Guardar este CV</button> }
+    <button type="button" class="btn btn-gradient" (click)="generatePdf()" [disabled]="!canExport">Generar PDF de este CV</button>
+    <p>Elegí «Guardar como PDF», papel A4 y desactivá los encabezados y pies del navegador.</p>
+  </section>
+  @if (document; as cv) { <section class="curriculum-preview"><app-profile-cv [document]="cv" [template]="template.value" /></section> }
+}
+}
+

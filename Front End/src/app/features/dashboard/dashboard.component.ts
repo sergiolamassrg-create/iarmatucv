@@ -7,11 +7,13 @@ import { AuthService } from '../../core/services/auth.service';
 import { ThemeService } from '../../core/services/theme.service';
 import { UiIconComponent } from '../../shared/ui-icon/ui-icon.component';
 import { ProfileService } from '../../core/services/profile.service';
+import { CurriculumsService } from '../../core/services/curriculums.service';
+import { CurriculumWorkspace } from '../../core/services/curriculum-workspace.service';
 
 @Component({
   selector: 'app-dashboard',
   imports: [RouterLink, RouterOutlet, NgTemplateOutlet, UiIconComponent],
-  providers: [ProfileService],
+  providers: [ProfileService, CurriculumsService, CurriculumWorkspace],
   changeDetection: ChangeDetectionStrategy.Eager,
   templateUrl: './dashboard.component.html',
   styleUrl: './dashboard.component.css'
@@ -20,6 +22,7 @@ export class DashboardComponent implements OnDestroy {
   readonly auth = inject(AuthService);
   readonly theme = inject(ThemeService);
   readonly profile = inject(ProfileService);
+  readonly cvWorkspace = inject(CurriculumWorkspace);
   private readonly router = inject(Router);
   private readonly destroyRef = inject(DestroyRef);
   @ViewChild('mobileMenu') private mobileMenu!: ElementRef<HTMLDialogElement>;
@@ -29,7 +32,16 @@ export class DashboardComponent implements OnDestroy {
   logoutError = '';
 
   get displayName(): string {
+    const name = this.profile.state().profile?.datosPersonales['nombre'];
+    if (typeof name === 'string' && name.trim()) return name.trim();
     return this.auth.user?.nickname?.trim() ?? '';
+  }
+  get isCurriculumsPage(): boolean { return this.router.url.split(/[?#]/, 1)[0].startsWith('/panel/curriculums'); }
+  get isAdminPage(): boolean { return this.router.url.split(/[?#]/, 1)[0] === '/panel/admin'; }
+
+  @HostListener('window:iarmatucv-perfil-actualizado')
+  onProfileUpdated(): void {
+    if (!this.profile.dirty && !this.profile.saving) this.profile.load();
   }
 
   get isProfilePage(): boolean { return this.router.url.split(/[?#]/, 1)[0].replace(/\/+$/, '') === '/panel/perfil'; }
@@ -46,6 +58,10 @@ export class DashboardComponent implements OnDestroy {
   }
 
   closeMenu(): void { this.mobileMenu.nativeElement.close(); }
+  openMilo(): void {
+    this.closeMenu();
+    window.dispatchEvent(new Event('iarmatucv-abrir-milo'));
+  }
 
   onMenuClosed(): void {
     this.menuOpen = false;
@@ -65,7 +81,7 @@ export class DashboardComponent implements OnDestroy {
   }
 
   async logout(): Promise<void> {
-    if (this.loggingOut || this.profile.saving || !this.profile.confirmLeave()) return;
+    if (this.loggingOut || this.profile.saving || this.cvWorkspace.saving() || !this.profile.confirmLeave() || !this.cvWorkspace.confirmLeave()) return;
     this.loggingOut = true;
     this.logoutError = '';
     try {

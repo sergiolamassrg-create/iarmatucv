@@ -1,0 +1,8 @@
+[
+  {
+    "source": "/api/v1/<*>",
+    "target": "https://w6og1akmjh.execute-api.us-east-1.amazonaws.com/api/v1/<*>",
+    "status": "200",
+    "condition": null
+  }
+]

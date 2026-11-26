@@ -178,6 +178,62 @@ test('missing configuration and DynamoDB failures return safe errors', async () 
   });
 });
 
+test('DynamoDB failures log safe diagnostics for each operation without changing the public 503', async t => {
+  const logger = t.mock.method(console, 'error', () => {});
+  const jwt = token();
+  const requestId = '12345678-1234-1234-1234-123456789abc';
+  const sensitive = ['persona@example.com', 'Persona Ejemplo', 'AKIA1234567890123456',
+    'private-secret-key', 'private-session-token', jwt, JSON.stringify(profile())];
+  failure = Object.assign(new Error(sensitive.join(' ')), {
+    name: 'AccessDeniedException', code: 'AccessDeniedException',
+    $metadata: { httpStatusCode: 400, requestId, authorization: `Bearer ${jwt}` },
+    credentials: { accessKeyId: sensitive[2], secretAccessKey: sensitive[3], sessionToken: sensitive[4] },
+    input: { Key: { userId: 'private-user-id' }, Item: profile() }
+  });
+  await serve(createApp({ verifyAccessToken: verify }), async request => {
+    for (const [method, operation] of [['GET', 'GetItem'], ['PUT', 'UpdateItem'], ['DELETE', 'DeleteItem']]) {
+      const result = await request('/perfil', { method, headers: { Authorization: `Bearer ${jwt}` },
+        ...(method === 'PUT' ? { body: profile() } : {}) });
+      assert.equal(result.response.status, 503);
+      assert.deepEqual(result.data, { error: { codigo: 'PERFIL_NO_DISPONIBLE',
+        mensaje: 'No pudimos procesar el perfil. Intentá nuevamente más tarde.' } });
+      const entry = logger.mock.calls.at(-1);
+      assert.equal(entry.arguments.length, 1);
+      const logged = JSON.parse(entry.arguments[0]);
+      assert.deepEqual(logged, { event: 'DYNAMODB_OPERATION_FAILED', operation,
+        errorName: 'AccessDeniedException', awsCode: 'AccessDeniedException',
+        message: 'AWS denied access to the DynamoDB operation.', httpStatusCode: 400, awsRequestId: requestId });
+    }
+    assert.equal(logger.mock.callCount(), 3);
+    const safeAwsId = 'A'.repeat(52);
+    failure = Object.assign(new Error(`Expired token ${sensitive.join(' ')}`), {
+      name: 'ExpiredTokenException', $metadata: { httpStatusCode: 400, requestId: safeAwsId }
+    });
+    await request('/perfil', { headers: { Authorization: `Bearer ${jwt}` } });
+    const expired = JSON.parse(logger.mock.calls.at(-1).arguments[0]);
+    assert.equal(expired.errorName, 'ExpiredTokenException');
+    assert.equal(expired.message, 'The AWS security token has expired.');
+    assert.equal(expired.awsCode, null);
+    assert.equal(expired.awsRequestId, safeAwsId);
+
+    // Even fields that usually contain machine identifiers may be contaminated.
+    failure = { name: sensitive.join(' '), code: jwt, message: sensitive.join(' '),
+      $metadata: { httpStatusCode: jwt, requestId: jwt } };
+    const unknown = await request('/perfil', { headers: { Authorization: `Bearer ${jwt}` } });
+    assert.equal(unknown.response.status, 503);
+    const logged = JSON.parse(logger.mock.calls.at(-1).arguments[0]);
+    assert.equal(logged.errorName, 'UnknownError');
+    assert.equal(logged.awsCode, null);
+    assert.equal(logged.awsRequestId, null);
+    assert.equal(logged.httpStatusCode, null);
+    assert.match(logged.message, /omitted/);
+  });
+  const output = JSON.stringify(logger.mock.calls.map(call => call.arguments));
+  for (const value of [...sensitive, 'private-user-id', 'Bearer', 'credentials', 'input', 'stack']) {
+    assert.equal(output.includes(value), false, 'Sensitive value must not reach diagnostic logs');
+  }
+});
+
 test('Lambda HTTP API v2 supports cookie CRUD without retaining another users profile', async () => {
   const invoke = createLambdaHandler(verify);
   const cookies = [`iarmatucv.access=${token()}`];

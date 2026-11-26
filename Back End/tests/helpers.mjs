@@ -39,11 +39,12 @@ export function token(changes = {}, options = {}) {
 
 export const profile = { name: 'Persona Ejemplo', familyName: 'Ejemplo', nickname: 'Persona' };
 export const credentials = { email: 'test@example.com', password: 'Example123!', ...profile };
-export const state = { challenge: false, revoked: false, calls: [], loginToken: undefined, failure: undefined, nickname: profile.nickname };
+export const state = { challenge: false, revoked: false, calls: [], loginToken: undefined, failure: undefined, nickname: profile.nickname, newRefreshToken: undefined };
 
 export function resetMock() {
   state.challenge = false; state.revoked = false; state.calls = []; state.loginToken = undefined; state.failure = undefined;
   state.nickname = profile.nickname;
+  state.newRefreshToken = undefined;
 }
 
 cognitoClient.send = async command => {
@@ -61,6 +62,14 @@ cognitoClient.send = async command => {
       .update(input.AuthParameters.USERNAME + process.env.COGNITO_CLIENT_ID).digest('base64'));
     if (state.challenge) return { ChallengeName: 'SOFTWARE_TOKEN_MFA', Session: 'test-challenge' };
     return { AuthenticationResult: { AccessToken: state.loginToken ?? token(), RefreshToken: 'test-refresh-token', ExpiresIn: 3600 } };
+  }
+  if (name === 'GetTokensFromRefreshTokenCommand') {
+    assert.equal(input.ClientId, process.env.COGNITO_CLIENT_ID);
+    assert.equal(input.ClientSecret, process.env.COGNITO_CLIENT_SECRET);
+    assert.equal('SECRET_HASH' in input, false);
+    if (!['test-refresh-token', 'rotated-refresh-token'].includes(input.RefreshToken)) throw Object.assign(new Error('Expired refresh'), { name: 'NotAuthorizedException' });
+    return { AuthenticationResult: { AccessToken: state.loginToken ?? token({ origin_jti: 'renewed' }), ExpiresIn: 3600,
+      ...(state.newRefreshToken ? { RefreshToken: state.newRefreshToken } : {}) } };
   }
   if (name === 'GetUserCommand') {
     if (state.revoked) throw Object.assign(new Error('Revoked'), { name: 'NotAuthorizedException' });

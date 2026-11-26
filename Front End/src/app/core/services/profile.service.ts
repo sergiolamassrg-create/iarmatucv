@@ -21,7 +21,7 @@ export class ProfileService {
 
   load(): void {
     this.state.set({ status: 'loading', profile: null, message: '' });
-    defer(() => this.http.get<{ data: ProfessionalProfile }>(apiUrl('perfil'), { withCredentials: true }))
+    defer(() => this.http.get<{ data: ProfessionalProfile }>(apiUrl('perfil'), { withCredentials: false }))
       .pipe(timeout(30000), takeUntilDestroyed(this.destroyRef)).subscribe({
         next: response => this.accept(response.data),
         error: error => {
@@ -36,13 +36,12 @@ export class ProfileService {
   }
 
   save(profile: ProfileInput) {
-    return defer(() => this.http.put<{ data: ProfessionalProfile }>(apiUrl('perfil'), profile, { withCredentials: true }))
+    return defer(() => this.http.put<{ data: ProfessionalProfile }>(apiUrl('perfil'), profile, { withCredentials: false }))
       .pipe(timeout(30000), tap(response => this.accept(response.data)));
   }
 
   handleError(error: unknown): void {
     if (error instanceof HttpErrorResponse && error.status === 401) {
-      this.auth.invalidateSession();
       this.state.set({ status: 'expired', profile: null, message: 'Tu sesión venció. Volvé a ingresar para continuar.' });
     }
   }

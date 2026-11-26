@@ -5,9 +5,14 @@ import { environment } from '../config/environment.js';
 import type { AuthIdentity, AuthOptions, AuthTokens } from '../models/auth-context.js';
 import { sessionCookieName } from '../middlewares/auth-session.middleware.js';
 import { AuthError } from './auth-error.js';
+import { currentUser } from './auth.service.js';
 
 export const accessCookieName = 'iarmatucv.access';
 export const refreshCookieName = 'iarmatucv.refresh';
+export const renewalCookieName = '__Secure-iarmatucv.renew';
+const renewalCookies: CookieOptions = { httpOnly: true, secure: true, sameSite: 'strict', path: '/api/v1/auth' };
+export function renewalToken(req: Request): string | undefined { return parseCookie(req.headers.cookie ?? '')[renewalCookieName]; }
+export function clearRenewalCookie(res: Response): void { res.clearCookie(renewalCookieName, renewalCookies); }
 
 export function authOptions(res: Response): AuthOptions { return res.locals['authOptions']; }
 
@@ -43,7 +48,19 @@ async function verified(token: string, res: Response) {
   }
 }
 
-export async function openAuth(req: Request, res: Response, tokens: AuthTokens): Promise<void> {
+export async function openAuth(req: Request, res: Response, tokens: AuthTokens): Promise<{ accessToken: string; expiresAt: number } | void> {
+  // Explicit opt-in: never expose a refresh token or depend on third-party cookies.
+  if (req.body?.transport === 'bearer' || req.body?.transport === 'bearer-cookie') {
+    const claims = await verified(tokens.accessToken, res);
+    if (req.body?.transport === 'bearer-cookie') {
+      if (!tokens.refreshToken || tokens.refreshToken.length > 3800) {
+        throw new AuthError(503, 'RENOVACION_NO_DISPONIBLE', 'No pudimos habilitar la recuperación de sesión. Intentá nuevamente más tarde.');
+      }
+      // Host-only session cookie. It must be delivered through the same-origin HTTPS proxy.
+      res.cookie(renewalCookieName, tokens.refreshToken, renewalCookies);
+    }
+    return { accessToken: tokens.accessToken, expiresAt: Math.min(tokens.expiresAt, claims.exp * 1000) };
+  }
   if (authOptions(res).mode === 'jwt') {
     const claims = await verified(tokens.accessToken, res);
     const maxAge = Math.max(0, Math.min(tokens.expiresAt, claims.exp * 1000) - Date.now());
@@ -62,14 +79,24 @@ export async function openAuth(req: Request, res: Response, tokens: AuthTokens):
 }
 
 export async function readAuth(req: Request, res: Response): Promise<AuthIdentity | null> {
-  if (authOptions(res).mode === 'jwt') {
+  if (authOptions(res).mode === 'jwt' || req.get('authorization')) {
     const authorization = req.get('authorization');
     const match = authorization?.match(/^Bearer ([^\s,]+)$/i);
     if (authorization && !match) throw new AuthError(401, 'SESION_INVALIDA', 'La autorización no es válida.');
     const token = match?.[1] ?? parseCookie(req.headers.cookie ?? '')[accessCookieName];
     if (!token) return null;
     const claims = await verified(token, res);
-    return { accessToken: token, subject: claims.sub };
+    try {
+      // Signature validation alone cannot detect a disabled/revoked Cognito account.
+      const user = await currentUser(token);
+      if (user.id !== claims.sub) throw new AuthError(401, 'SESION_INVALIDA', 'La sesión no es válida. Volvé a ingresar.');
+      return { accessToken: token, subject: claims.sub, user };
+    } catch (error) {
+      if (error instanceof Error && ['NotAuthorizedException', 'UserNotFoundException'].includes(error.name)) {
+        throw new AuthError(401, 'CUENTA_NO_DISPONIBLE', 'Tu sesión ya no está activa o la cuenta está deshabilitada. Volvé a ingresar.');
+      }
+      throw error;
+    }
   }
   const session = req.session.auth;
   if (!session) return null;
@@ -77,7 +104,15 @@ export async function readAuth(req: Request, res: Response): Promise<AuthIdentit
     await closeAuth(req, res);
     return null;
   }
-  return { accessToken: session.accessToken };
+  try {
+    const user = await currentUser(session.accessToken);
+    return { accessToken: session.accessToken, subject: user.id, user };
+  } catch (error) {
+    if (error instanceof Error && ['NotAuthorizedException', 'UserNotFoundException'].includes(error.name)) {
+      throw new AuthError(401, 'CUENTA_NO_DISPONIBLE', 'Tu sesión ya no está activa o la cuenta está deshabilitada. Volvé a ingresar.');
+    }
+    throw error;
+  }
 }
 
 export async function closeAuth(req: Request, res: Response): Promise<string | undefined> {

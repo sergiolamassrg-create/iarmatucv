@@ -1,0 +1,91 @@
+<button #launcher class="milo-launcher" type="button" (click)="opened() ? minimize() : open()"
+  [attr.aria-expanded]="opened()" aria-controls="milo-dialog" aria-label="Abrir o minimizar la conversación con Milo">
+  <img src="/assets/milo/Milo.png" alt="" width="48" height="48" /><span>Milo</span>
+</button>
+@if (opened()) {
+<section id="milo-dialog" role="dialog" aria-labelledby="milo-widget-title" class="milo-window" [class.milo-expanded]="expanded()" (keydown.escape)="escape($event)">
+  <header>
+    <img src="/assets/milo/Milo.png" alt="" width="42" height="42" />
+    <div><h2 id="milo-widget-title">Milo</h2><small>Tu asistente de CV</small></div>
+    <button class="milo-resize" type="button" (click)="toggleExpanded()" [attr.aria-pressed]="expanded()"
+      [attr.aria-label]="expanded() ? 'Restaurar ventana compacta' : 'Ampliar conversación'"
+      [title]="expanded() ? 'Restaurar ventana compacta' : 'Ampliar conversación'">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path [attr.d]="expanded() ? 'M3 8h5V3m13 5h-5V3M3 16h5v5m13-5h-5v5' : 'M8 3H3v5m13-5h5v5M3 16v5h5m13-5v5h-5'" />
+      </svg>
+    </button>
+    <button type="button" (click)="minimize()" aria-label="Minimizar conversación">−</button>
+    <button type="button" (click)="close()" aria-label="Cerrar ventana de Milo">×</button>
+  </header>
+  <div class="milo-toolbar">
+    <button type="button" (click)="newConversation()" [disabled]="busy()">Nueva conversación</button>
+    <button type="button" (click)="toggleLibrary()" [disabled]="busy()">Mis CV</button>
+  </div>
+  <p class="milo-privacy">Tus consultas se procesan con Google Gemini. Evitá datos sensibles. Guardamos un historial limitado en tu cuenta.</p>
+  <div #messages class="milo-messages" role="log" aria-label="Historial con Milo" aria-live="polite" [attr.aria-busy]="busy()">
+    @if (conversation(); as chat) {
+      @for (turn of chat.messages; track $index) {
+        <article [class.user]="turn.role === 'user'"><strong>{{ turn.role === 'user' ? 'Vos' : 'Milo' }}</strong><p>{{ turn.text }}</p></article>
+      }
+      @if (chat.messages.length === 1) {
+        <div class="milo-quick">
+          <button type="button" [disabled]="busy()" (click)="quick('Quiero crear un currículum desde cero. Haceme preguntas para recopilar los datos.')">Crear un currículum</button>
+          <button type="button" [disabled]="busy()" (click)="quick('Quiero mejorar mi currículum. Consultá mis CV y ayudame a elegir qué mejorar.')">Mejorar mi currículum</button>
+          <button type="button" [disabled]="busy()" (click)="library.set(false); toggleLibrary()">Consultar mis currículums</button>
+          <button type="button" [disabled]="busy()" (click)="quick('Quiero conversar sobre mi desarrollo profesional.')">Hablar con Milo</button>
+          <button type="button" [disabled]="busy()" (click)="quick('Quiero editar mi propio perfil. Consultá mi información profesional y preguntame qué quiero cambiar.')">Editar mi perfil</button>
+        </div>
+      }
+      @if (library()) {
+        <section class="milo-proposal" aria-label="Tus CV guardados en Milo">
+          <h3>Mis CV</h3>
+          @for (cv of chat.curriculums; track cv.id) {
+            <p><strong>{{ cv.titulo }}</strong></p>
+            <button type="button" [disabled]="busy()" (click)="viewCv(cv.id)">Ver CV</button>
+            <button type="button" [disabled]="busy()" (click)="editCv(cv.id)">Proponer mejoras</button>
+            <a [routerLink]="['/panel/curriculums', cv.id]" (click)="minimize()">Editar / PDF</a>
+          } @empty { <p>Todavía no guardaste CV con Milo.</p> }
+          @if (selected(); as cv) { <app-milo-cv [data]="cv" /> }
+        </section>
+      }
+      @if (chat.propuestaPerfil; as proposal) {
+        <section class="milo-proposal" aria-labelledby="milo-profile-title">
+          <h3 id="milo-profile-title">Revisá los cambios de tu perfil</h3>
+          <p>Se aplican solo a tu perfil. La propuesta vence en diez minutos.</p>
+          @for (change of proposal.cambios; track change.campo) {
+            <h4>{{ profileField(change.campo) }}</h4>
+            <p>Antes: {{ change.anterior || '(sin completar)' }}</p>
+            <p>Propuesta: {{ change.valor }}</p>
+          }
+          <label class="milo-approval"><input type="checkbox" [formControl]="approval" /> Revisé los datos y quiero actualizar mi perfil.</label>
+          <button class="primary" type="button" [disabled]="busy() || approval.invalid" (click)="confirmProfile()">Confirmar cambios del perfil</button>
+          <button type="button" [disabled]="busy()" (click)="cancel()">Descartar propuesta</button>
+        </section>
+      }
+      @if (chat.propuesta; as proposal) {
+        <section class="milo-proposal" aria-labelledby="milo-proposal-title">
+          <h3 id="milo-proposal-title">{{ proposal.tipo === 'crear' ? 'Revisá el nuevo CV' : 'Revisá los cambios' }}</h3>
+          <p>La propuesta todavía no está guardada. Vence en diez minutos.</p>
+          @if (proposal.anterior; as previous) {
+            <details><summary>Contenido anterior</summary><app-milo-cv [data]="previous" /></details>
+          }
+          <h4>Contenido propuesto</h4><app-milo-cv [data]="proposal.datos" />
+          <label class="milo-approval"><input type="checkbox" [formControl]="approval" /> Revisé los datos y quiero guardar esta propuesta.</label>
+          <button class="primary" type="button" [disabled]="busy() || approval.invalid" (click)="confirm()">Confirmar y guardar</button>
+          <button type="button" [disabled]="busy()" (click)="cancel()">Descartar propuesta</button>
+        </section>
+      }
+    }
+    @if (busy()) { <p role="status">Milo está trabajando…</p> }
+  </div>
+  @if (error()) {
+    <div class="milo-error" role="alert">{{ error() }} <button type="button" [disabled]="busy()" (click)="load()">Recargar conversación</button></div>
+  }
+  <form [formGroup]="form" (ngSubmit)="send()">
+    <label for="milo-input">Tu mensaje</label>
+    <textarea #messageInput id="milo-input" [formControl]="message" [readOnly]="busy()" maxlength="1500" rows="2" placeholder="¿En qué te puedo ayudar?" aria-describedby="milo-input-help"></textarea>
+    <div><small id="milo-input-help">{{ message.value.length }}/1500</small><button class="primary" type="submit" [disabled]="busy() || message.invalid || !conversation()">Enviar</button></div>
+  </form>
+</section>
+}
+

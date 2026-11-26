@@ -1,8 +1,13 @@
 <header class="profile-heading">
   <div><p class="eyebrow">TU HISTORIA, EN TUS PALABRAS</p><h1>Mi perfil profesional</h1>
-  <p>Reuní tu experiencia y tus habilidades. Podés completar tu información de a poco.</p></div>
+  <p>Reuní tu experiencia y tus habilidades. Este es tu perfil común; cada CV guardado se edita por separado en Mis CV.</p></div>
   <a routerLink="/panel" class="btn btn-outline">Volver al panel</a>
 </header>
+<section class="profile-library-links" aria-label="Tus versiones de CV">
+  <div><strong>¿Querés editar un CV creado con Milo o cambiar su diseño?</strong>
+  <p>Entrá a Mis CV, elegí la versión y abrí Editar o Vista previa / PDF. Un mismo contenido puede usar cualquiera de las dos plantillas.</p></div>
+  <a routerLink="/panel/curriculums" class="btn btn-gradient">Ver y editar todos mis CV</a>
+</section>
 
 @switch (store.state().status) {
   @case ('loading') { <div class="profile-notice" role="status" aria-live="polite">Cargando tu perfil…</div> }
@@ -54,8 +59,8 @@
       </section>
       <section id="perfil-cv" data-step="6" [hidden]="step !== 6" class="profile-final">
         <div class="profile-card cv-controls">
-          <h2 tabindex="-1">Vista previa de tu CV</h2>
-          <p>Elegí qué información incluir. La selección solo cambia este CV, sin modificar tu perfil guardado.</p>
+          <h2 tabindex="-1">Vista previa de tu perfil común</h2>
+          <p>Esta vista usa la información de tu perfil. Para editar o cambiar la plantilla de un CV guardado, abrilo desde <a routerLink="/panel/curriculums">Mis CV</a>.</p>
           <div class="cv-template-picker"><label for="cv-template">Plantilla</label><select id="cv-template" [(ngModel)]="cvOptions.template" [ngModelOptions]="standalone" (ngModelChange)="cvOptionsTouched = true">
             @for (template of cvTemplates; track template.key) { <option [value]="template.key">{{ template.name }}</option> }
           </select>

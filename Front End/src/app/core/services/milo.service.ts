@@ -10,7 +10,7 @@ export class MiloService {
   private readonly http = inject(HttpClient);
   send(mensaje: string, historial: MiloTurn[]) {
     return defer(() => this.http.post<{ data: { respuesta: string; estado: 'ok' } }>(
-      apiUrl('milo/chat'), { mensaje, historial }, { withCredentials: true }
+      apiUrl('milo/chat'), { mensaje, historial }, { withCredentials: false }
     )).pipe(timeout(25000));
   }
 }

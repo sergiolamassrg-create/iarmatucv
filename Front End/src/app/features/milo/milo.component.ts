@@ -36,7 +36,6 @@ export class MiloComponent {
       },
       error: error => {
         if (error instanceof HttpErrorResponse && error.status === 401) {
-          this.auth.invalidateSession();
           this.expired = true;
           this.turns = [];
           this.message = '';

@@ -6,7 +6,7 @@ import { requireAuth } from '../middlewares/require-auth.middleware.js';
 import type { AuthOptions } from '../models/auth-context.js';
 import {
   registerController, confirmController, resendController, loginController,
-  sessionController, recoverController, resetController, logoutController
+  sessionController, recoverController, resetController, logoutController, renewController
 } from '../controllers/auth.controller.js';
 
 export function createAuthRouter(options: AuthOptions) {
@@ -30,6 +30,7 @@ export function createAuthRouter(options: AuthOptions) {
   authRouter.post('/confirmacion', confirmController);
   authRouter.post('/reenviar-codigo', resendController);
   authRouter.post('/ingreso', loginController);
+  authRouter.post('/renovar', renewController);
   authRouter.post('/recuperacion', recoverController);
   authRouter.post('/restablecer', resetController);
   authRouter.post('/salida', logoutController);

@@ -1,0 +1,20 @@
+<header class="curriculums-heading">
+  <div><p class="eyebrow">UNA HISTORIA, DISTINTOS OBJETIVOS</p><h1>Mis CV</h1>
+  <p>Acá están todos tus CV, incluidos los creados con Milo. Abrí cualquiera para editar su contenido y elegir ATS Clásica o Profesional Moderna. No necesitás otro CV para cambiar el diseño.</p></div>
+  <a routerLink="/panel/curriculums/nuevo" class="btn btn-gradient">Crear un CV</a>
+</header>
+<p><a routerLink="/panel/perfil">Editar mis datos personales comunes</a> · <a routerLink="/panel/curriculums/nuevo" [queryParams]="{ base: 'perfil' }">Crear una versión desde mi perfil</a></p>
+@if (loading()) { <p role="status">Cargando tus CV…</p> }
+@if (error()) { <div class="library-error" role="alert">{{ error() }} <button type="button" class="btn btn-outline" (click)="load()">Reintentar</button></div> }
+<div class="curriculums-grid">
+  @for (cv of items(); track cv.id) {
+    <article class="curriculum-card"><h2>{{ cv.titulo }}</h2><p>Versión guardada · revisión {{ cv.revision }} · {{ cv.plantilla === 'moderna' ? 'Profesional Moderna' : 'ATS Clásica' }}</p>
+      <div><a class="btn btn-outline" [routerLink]="['/panel/curriculums', cv.id]">Editar</a>
+      <a class="btn btn-gradient" [routerLink]="['/panel/curriculums', cv.id]" [queryParams]="{ vista: 'cv' }">Vista previa / PDF</a>
+      <button class="btn btn-outline" type="button" [disabled]="!!duplicating()" (click)="duplicate(cv.id)">{{ duplicating() === cv.id ? 'Duplicando…' : 'Duplicar' }}</button></div>
+    </article>
+  } @empty {
+    @if (!loading() && !error()) { <section class="curriculum-card"><h2>Tu primer CV</h2><p>Creá una versión para cada objetivo laboral. También aparecen aquí los CV que confirmaste con Milo.</p></section> }
+  }
+</div>
+

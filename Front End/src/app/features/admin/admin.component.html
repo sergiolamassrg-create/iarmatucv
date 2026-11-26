@@ -1,0 +1,31 @@
+<header><p class="eyebrow">ADMINISTRACIÓN</p><h1>Cuentas registradas</h1>
+<p>Datos básicos de cuenta y acceso. Los perfiles profesionales y el contenido de los CV permanecen privados.</p></header>
+<div class="admin-stats" aria-label="Resumen de la página actual">
+  <article><strong>{{ accounts().length }}</strong><span>Cuentas en esta página</span></article>
+  <article><strong>{{ enabledCount }}</strong><span>Habilitadas en esta página</span></article>
+  <article><strong>{{ accounts().length - enabledCount }}</strong><span>Deshabilitadas en esta página</span></article>
+</div>
+<div class="admin-actions"><button class="btn btn-outline" type="button" (click)="load()" [disabled]="loading() || saving()">Recargar / primera página</button></div>
+@if (loading()) { <p role="status">Cargando cuentas…</p> }
+@if (error()) { <p class="admin-error" role="alert">{{ error() }}</p> }
+@if (message()) { <p role="status">{{ message() }}</p> }
+@if (pending(); as account) {
+  <section class="admin-confirm" aria-labelledby="admin-confirm-title">
+    <h2 id="admin-confirm-title">{{ account.habilitado ? 'Deshabilitar' : 'Habilitar' }} cuenta</h2>
+    <p>Confirmá el cambio de acceso para {{ account.email || account.nombre }}. Sus datos guardados se conservan.</p>
+    <button class="btn btn-gradient" type="button" (click)="confirm()" [disabled]="saving()">{{ saving() ? 'Guardando…' : 'Confirmar cambio de acceso' }}</button>
+    <button class="btn btn-outline" type="button" (click)="pending.set(null)" [disabled]="saving()">Cancelar</button>
+  </section>
+}
+<div class="admin-table"><table><caption>Hasta 25 cuentas por página</caption>
+  <thead><tr><th scope="col">Correo</th><th scope="col">Nombre para mostrar</th><th scope="col">Registro</th><th scope="col">Verificación</th><th scope="col">Acceso</th><th scope="col">Acción</th></tr></thead>
+  <tbody>@for (account of accounts(); track account.id) {
+    <tr><td>{{ account.email || 'Sin correo' }}</td><td>{{ account.nombre || 'Sin completar' }}</td>
+      <td>{{ account.registrado ? (account.registrado | date:'dd/MM/yyyy') : 'Sin fecha' }}</td><td>{{ account.estado }}</td>
+      <td>{{ account.habilitado ? 'Habilitada' : 'Deshabilitada' }}</td>
+      <td>@if (account.administrador) { <span>Administración protegida</span> } @else {
+        <button class="btn btn-outline" type="button" (click)="pending.set(account)" [disabled]="saving() || loading()">{{ account.habilitado ? 'Deshabilitar' : 'Habilitar' }}</button>
+      }</td></tr>
+  } @empty { <tr><td colspan="6">{{ loading() ? 'Cargando…' : 'No hay cuentas para mostrar.' }}</td></tr> }</tbody>
+</table></div>
+@if (next()) { <button type="button" class="btn btn-outline" (click)="load(next())" [disabled]="loading() || saving()">Página siguiente</button> }

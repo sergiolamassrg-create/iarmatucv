@@ -1,7 +1,7 @@
 import type { Request, Response } from 'express';
 import * as auth from '../services/auth.service.js';
 import { AuthError } from '../services/auth-error.js';
-import { openAuth, readAuth, closeAuth } from '../services/auth-transport.service.js';
+import { openAuth, readAuth, closeAuth, renewalToken, clearRenewalCookie } from '../services/auth-transport.service.js';
 import type { AuthIdentity } from '../models/auth-context.js';
 
 function field(req: Request, name: string, max: number): string {
@@ -40,15 +40,15 @@ export async function resendController(req: Request, res: Response): Promise<voi
 
 export async function loginController(req: Request, res: Response): Promise<void> {
   const result = await auth.login(email(req), field(req, 'password', 256));
-  await openAuth(req, res, result.session);
-  res.json({ data: result.user });
+  const session = await openAuth(req, res, result.session);
+  res.json({ data: result.user, ...(session ? { session } : {}) });
 }
 
 export async function sessionController(req: Request, res: Response): Promise<void> {
   const identity: AuthIdentity | null = res.locals['authIdentity'] ?? await readAuth(req, res);
   if (!identity) { res.json({ data: null }); return; }
   try {
-    const user = await auth.currentUser(identity.accessToken);
+    const user = identity.user ?? await auth.currentUser(identity.accessToken);
     if (identity.subject && user.id !== identity.subject) {
       throw new AuthError(401, 'SESION_INVALIDA', 'La sesión no es válida. Volvé a ingresar.');
     }
@@ -58,6 +58,28 @@ export async function sessionController(req: Request, res: Response): Promise<vo
     await closeAuth(req, res);
     if (res.locals['authIdentity']) throw new AuthError(401, 'SESION_INVALIDA', 'La sesión no es válida. Volvé a ingresar.');
     res.json({ data: null });
+  }
+}
+
+export async function renewController(req: Request, res: Response): Promise<void> {
+  if (!req.body || typeof req.body !== 'object' || Array.isArray(req.body) || Object.keys(req.body).length) {
+    throw new AuthError(400, 'DATOS_INVALIDOS', 'La recuperación de sesión no admite credenciales en el cuerpo.');
+  }
+  const refreshToken = renewalToken(req);
+  if (!refreshToken) { res.json({ data: null }); return; }
+  if (refreshToken.length > 3800) { clearRenewalCookie(res); throw new AuthError(401, 'SESION_VENCIDA', 'Tu sesión venció. Volvé a ingresar.'); }
+  try {
+    const result = await auth.renew(refreshToken);
+    req.body = { transport: 'bearer-cookie' };
+    const session = await openAuth(req, res, result.session);
+    res.json({ data: result.user, session });
+  } catch (error) {
+    if (error instanceof Error && ['NotAuthorizedException', 'UserNotFoundException'].includes(error.name) || error instanceof AuthError && error.status === 401) {
+      clearRenewalCookie(res);
+      throw new AuthError(401, 'SESION_VENCIDA', 'Tu sesión venció. Volvé a ingresar.');
+    }
+    // Keep the renewal cookie on transient provider/network failures.
+    throw error;
   }
 }
 
@@ -72,6 +94,29 @@ export async function resetController(req: Request, res: Response): Promise<void
 }
 
 export async function logoutController(req: Request, res: Response): Promise<void> {
+  const renewal = renewalToken(req);
+  if (renewal) {
+    clearRenewalCookie(res);
+    try { await auth.revoke(renewal); }
+    catch {
+      res.json({ data: { message: 'Sesión cerrada en este navegador. No pudimos confirmar el cierre remoto; puede seguir válido hasta su vencimiento.' } });
+      return;
+    }
+  }
+  if (req.get('authorization')) {
+    try {
+      const identity = await readAuth(req, res);
+      if (identity) await auth.signOut(identity.accessToken);
+    } catch (error) {
+      if (!(error instanceof AuthError && error.status === 401) &&
+          !(error instanceof Error && error.name === 'NotAuthorizedException')) {
+        res.json({ data: { message: 'Sesión cerrada en este navegador. No pudimos cerrar el acceso remoto; puede seguir válido hasta su vencimiento.' } });
+        return;
+      }
+    }
+    res.json({ data: { message: 'Sesión cerrada.' } });
+    return;
+  }
   const refreshToken = await closeAuth(req, res);
   if (refreshToken) {
     try { await auth.revoke(refreshToken); }

@@ -13,7 +13,14 @@ export function createLambdaHandler(verifyAccessToken?: AccessTokenVerifier): AP
         body: JSON.stringify({ error: { codigo: 'EVENTO_INVALIDO', mensaje: 'Se requiere HTTP API payload v2.' } })
       };
     }
-    return await proxy(event, context) as APIGatewayProxyStructuredResultV2;
+    const result = await proxy(event, context) as APIGatewayProxyStructuredResultV2;
+    // serverless-http keeps a single cookie as a header; HTTP API v2 has a dedicated cookies array.
+    const singleCookie = result.headers?.['set-cookie'];
+    if (typeof singleCookie === 'string') {
+      result.cookies = [...(result.cookies ?? []), singleCookie];
+      delete result.headers!['set-cookie'];
+    }
+    return result;
   };
 }
 

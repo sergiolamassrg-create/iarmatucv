@@ -16,6 +16,10 @@
   </div>
 
   <div class="access-panel">
+    @if (auth.sessionError) {
+      <p class="access-error" role="alert">{{ auth.sessionError }}</p>
+      <button type="button" class="btn btn-outline" [disabled]="busy" (click)="retrySession()">Reintentar recuperar sesión</button>
+    }
     @if (auth.user; as user) {
       <div class="access-account">
         <span class="access-pill">✦ Tu cuenta</span>

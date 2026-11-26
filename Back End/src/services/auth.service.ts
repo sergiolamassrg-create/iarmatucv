@@ -2,11 +2,12 @@ import { createHmac } from 'node:crypto';
 import {
   CognitoIdentityProviderClient, SignUpCommand, ConfirmSignUpCommand,
   ResendConfirmationCodeCommand, InitiateAuthCommand, GetUserCommand,
-  ForgotPasswordCommand, ConfirmForgotPasswordCommand, RevokeTokenCommand
+  ForgotPasswordCommand, ConfirmForgotPasswordCommand, RevokeTokenCommand, GlobalSignOutCommand, GetTokensFromRefreshTokenCommand
 } from '@aws-sdk/client-cognito-identity-provider';
 import { environment } from '../config/environment.js';
 import type { AuthUser } from '../models/auth-user.js';
 import { AuthError } from './auth-error.js';
+import { isAdministrator } from './admin-policy.js';
 
 export const cognitoClient = new CognitoIdentityProviderClient({
   region: environment.cognito.region,
@@ -75,11 +76,26 @@ export async function currentUser(accessToken: string): Promise<AuthUser> {
   const result = await cognitoClient.send(new GetUserCommand({ AccessToken: accessToken }));
   const attributes = Object.fromEntries((result.UserAttributes ?? []).map(item => [item.Name, item.Value]));
   if (!attributes['sub']) throw new AuthError(401, 'SESION_INVALIDA', 'La sesión no es válida. Volvé a ingresar.');
-  return {
+  const user = {
     id: attributes['sub'], username: result.Username ?? '',
     nickname: attributes['nickname'] ?? '',
     email: attributes['email'] ?? '', emailVerified: attributes['email_verified'] === 'true'
   };
+  return { ...user, isAdmin: isAdministrator(user) };
+}
+
+export async function renew(refreshToken: string) {
+  const { clientId, clientSecret } = environment.cognito;
+  if (!clientId) throw new AuthError(503, 'ACCESO_NO_CONFIGURADO', 'El acceso todavía no está disponible.');
+  const result = await cognitoClient.send(new GetTokensFromRefreshTokenCommand({
+    ClientId: clientId, ...(clientSecret ? { ClientSecret: clientSecret } : {}), RefreshToken: refreshToken
+  }));
+  const tokens = result.AuthenticationResult;
+  if (!tokens?.AccessToken) throw new AuthError(503, 'RENOVACION_NO_DISPONIBLE', 'No pudimos recuperar tu sesión. Podés reintentar.');
+  return { user: await currentUser(tokens.AccessToken), session: {
+    accessToken: tokens.AccessToken, refreshToken: tokens.RefreshToken ?? refreshToken,
+    expiresAt: Date.now() + (tokens.ExpiresIn ?? 3600) * 1000
+  } };
 }
 
 export async function recover(email: string): Promise<void> {
@@ -102,4 +118,8 @@ export async function revoke(refreshToken: string): Promise<void> {
     ...(environment.cognito.clientSecret ? { ClientSecret: environment.cognito.clientSecret } : {}),
     Token: refreshToken
   }));
+}
+
+export async function signOut(accessToken: string): Promise<void> {
+  await cognitoClient.send(new GlobalSignOutCommand({ AccessToken: accessToken }));
 }

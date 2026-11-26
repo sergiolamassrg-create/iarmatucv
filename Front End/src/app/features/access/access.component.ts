@@ -149,6 +149,17 @@ export class AccessComponent {
     } finally { this.busy = false; }
   }
 
+  async retrySession(): Promise<void> {
+    if (this.busy) return;
+    this.busy = true; this.error = '';
+    try {
+      const user = await firstValueFrom(this.auth.restoreSession(true).pipe(takeUntilDestroyed(this.destroyRef)));
+      if (user && !this.destroyRef.destroyed) await this.router.navigateByUrl('/panel', { replaceUrl: true });
+      else this.message = this.auth.takeLogoutNotice() || 'No hay una sesión activa. Podés ingresar.';
+    } catch { /* AuthService preserves the renewal cookie and shows a retry message. */ }
+    finally { this.busy = false; }
+  }
+
   private resetFields(form: NgForm): void {
     this.password = '';
     this.confirmPassword = '';

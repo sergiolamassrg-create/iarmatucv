@@ -1,0 +1,15 @@
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "AdministracionBasicaPoolExistente",
+      "Effect": "Allow",
+      "Action": [
+        "cognito-idp:ListUsers",
+        "cognito-idp:AdminEnableUser",
+        "cognito-idp:AdminDisableUser"
+      ],
+      "Resource": "arn:aws:cognito-idp:us-east-1:TU_ACCOUNT_ID:userpool/TU_USER_POOL_ID"
+    }
+  ]
+}

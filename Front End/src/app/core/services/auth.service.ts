@@ -1,7 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
-import { defer, map, ReplaySubject, take, tap, timeout } from 'rxjs';
-import { environment } from '../../../environments/environment';
+import { catchError, defer, finalize, map, Observable, of, shareReplay, tap, throwError, timeout } from 'rxjs';
 import { apiUrl, ApiConfigurationError } from '../config/api.config';
 import { AuthUser } from '../models/auth-user';
 
@@ -11,38 +10,110 @@ interface Message { message: string; }
 @Injectable({ providedIn: 'root' })
 export class AuthService {
   user: AuthUser | null = null;
-  private sessionVersion = 0;
-  private readonly sessionResolved = new ReplaySubject<void>(1);
+  private accessToken: string | null = null;
+  private expiresAt = 0;
+  private sessionReady = false;
+  private restoring?: Observable<AuthUser | null>;
+  private version = 0;
+  sessionError = '';
   private logoutNotice = '';
 
-  constructor(private readonly http: HttpClient) {
-    if (!environment.apiBaseUrl.trim()) { this.resolveSession(); return; }
-    const version = this.sessionVersion;
-    defer(() => this.http.get<ApiResponse<AuthUser | null>>(apiUrl('auth/sesion'), { withCredentials: true }))
-      .pipe(timeout(25000)).subscribe({
-        next: response => {
-          if (version === this.sessionVersion) this.user = response.data;
-          this.resolveSession();
-        },
-        error: () => { this.resolveSession(); }
-      });
+  constructor(private readonly http: HttpClient) {}
+
+  // Cookie renewal is enabled only behind a same-origin API path, never cross-site.
+  get persistentSession(): boolean { return /^\/(?!\/)/.test(apiUrl('')); }
+
+  waitForSession() {
+    if (this.sessionReady && (!this.user || this.getAccessToken())) return of(this.user);
+    return this.restoreSession().pipe(catchError(() => of(null)));
   }
 
-  waitForSession() { return this.sessionResolved.pipe(take(1), map(() => this.user)); }
+  restoreSession(force = false): Observable<AuthUser | null> {
+    if (!this.persistentSession) { this.sessionReady = true; return of(this.user); }
+    try { if (localStorage.getItem('iarmatucv.signedOut') === 'true') { this.sessionReady = true; return of(null); } } catch { /* Storage can be unavailable. */ }
+    if (this.restoring) return this.restoring;
+    if (this.sessionReady && !force && (!this.user || this.getAccessToken())) return of(this.user);
+    const version = this.version;
+    const request = defer(() => this.http.post<ApiResponse<AuthUser | null> & { session?: { accessToken: string; expiresAt: number } }>(
+      apiUrl('auth/renovar'), {}, { withCredentials: true })).pipe(
+      timeout(15000),
+      map(response => {
+        if (version !== this.version) return this.user;
+        if (response?.data) this.accept(response as ApiResponse<AuthUser> & { session?: { accessToken: string; expiresAt: number } });
+        else if (response?.data === null) { this.accessToken = null; this.expiresAt = 0; this.user = null; }
+        else throw new HttpErrorResponse({ status: 503, error: { error: {
+          codigo: 'RENOVACION_NO_DISPONIBLE', mensaje: 'El servicio de recuperación de sesión no está disponible.'
+        } } });
+        this.sessionError = ''; this.sessionReady = true;
+        return this.user;
+      }),
+      catchError(error => {
+        if (version !== this.version) return of(this.user);
+        this.sessionReady = true;
+        if (error instanceof HttpErrorResponse && error.status === 401) {
+          this.invalidateSession(); return of(null);
+        }
+        this.sessionError = 'No pudimos recuperar tu sesión. Revisá tu conexión y reintentá; no hace falta ingresar de nuevo todavía.';
+        return throwError(() => error);
+      }),
+      finalize(() => { if (this.restoring === request) this.restoring = undefined; }),
+      shareReplay({ bufferSize: 1, refCount: false })
+    );
+    this.restoring = request;
+    return request;
+  }
+
+  ensureAccess() {
+    const token = this.getAccessToken();
+    if (token || !this.persistentSession) return of(token);
+    return this.restoreSession(true).pipe(map(() => this.getAccessToken()));
+  }
 
   invalidateSession(): void {
-    this.sessionVersion++;
+    this.version++;
+    this.restoring = undefined;
+    this.accessToken = null;
+    this.expiresAt = 0;
     this.user = null;
-    this.resolveSession();
+    this.sessionError = '';
+    this.logoutNotice = 'Tu sesión venció. Volvé a ingresar para continuar.';
+    this.sessionReady = true;
   }
 
+  getAccessToken(): string | null {
+    if (this.accessToken && this.expiresAt <= Date.now()) {
+      if (this.persistentSession) return null;
+      this.invalidateSession();
+    }
+    return this.accessToken;
+  }
+
+  isAuthenticated(): boolean { return Boolean(this.getAccessToken() && this.user); }
+
   login(email: string, password: string) {
-    return this.post<AuthUser>('ingreso', { email, password }).pipe(tap(response => {
-      this.sessionVersion++;
-      this.user = response.data;
-      this.logoutNotice = '';
-      this.resolveSession();
-    }));
+    return defer(() => {
+      const version = ++this.version;
+      this.restoring = undefined;
+      return this.post<AuthUser>('ingreso', { email, password, transport: this.persistentSession ? 'bearer-cookie' : 'bearer' }).pipe(tap(response => {
+        if (version === this.version) this.accept(response);
+      }));
+    });
+  }
+
+  private accept(response: ApiResponse<AuthUser> & { session?: { accessToken: string; expiresAt: number } }): void {
+    const session = response.session;
+    if (!session?.accessToken || !Number.isFinite(session.expiresAt) || session.expiresAt <= Date.now()) {
+      throw new HttpErrorResponse({ status: 503, error: { error: {
+        codigo: 'ACCESO_NO_ACTUALIZADO', mensaje: 'El servicio de acceso requiere actualizarse. Intentá nuevamente más tarde.'
+      } } });
+    }
+    this.accessToken = session.accessToken;
+    this.expiresAt = session.expiresAt;
+    this.user = response.data;
+    this.logoutNotice = '';
+    this.sessionReady = true;
+    this.sessionError = '';
+    try { localStorage.removeItem('iarmatucv.signedOut'); } catch { /* No credentials are stored here. */ }
   }
 
   register(email: string, password: string, profile: { name: string; familyName: string; nickname: string }) {
@@ -54,12 +125,17 @@ export class AuthService {
   recover(email: string) { return this.post<Message>('recuperacion', { email }); }
   reset(email: string, code: string, password: string) { return this.post<Message>('restablecer', { email, code, password }); }
   logout() {
-    return this.post<Message>('salida', {}).pipe(tap(response => {
-      this.sessionVersion++;
-      this.user = null;
-      this.logoutNotice = response.data.message;
-      this.resolveSession();
-    }));
+    return defer(() => {
+      const token = this.getAccessToken();
+      this.invalidateSession();
+      // A non-secret flag prevents restoring an HttpOnly cookie after an offline logout.
+      try { localStorage.setItem('iarmatucv.signedOut', 'true'); } catch { /* Remote revocation remains authoritative. */ }
+      return this.http.post<ApiResponse<Message>>(apiUrl('auth/salida'), {}, {
+        withCredentials: this.persistentSession, headers: token ? { Authorization: `Bearer ${token}` } : {}
+      }).pipe(timeout(25000), catchError(() => of({ data: {
+        message: 'Sesión cerrada en este navegador. No pudimos confirmar el cierre remoto; puede seguir válido hasta su vencimiento.'
+      } })), tap(response => { this.logoutNotice = response.data.message; }));
+    });
   }
 
   takeLogoutNotice(): string {
@@ -80,12 +156,9 @@ export class AuthService {
   }
 
   private post<T>(path: string, body: object) {
-    return defer(() => this.http.post<ApiResponse<T>>(apiUrl(`auth/${path}`), body, { withCredentials: true }))
+    return defer(() => this.http.post<ApiResponse<T> & { session?: { accessToken: string; expiresAt: number } }>(
+      apiUrl(`auth/${path}`), body, { withCredentials: this.persistentSession }))
       .pipe(timeout(25000));
   }
 
-  private resolveSession(): void {
-    this.sessionResolved.next();
-    this.sessionResolved.complete();
-  }
 }

@@ -1,13 +1,48 @@
+# Dependencias y compilaciones: se regeneran con npm
 **/node_modules/
 **/dist/
 **/.angular/
 **/coverage/
+
+# Configuracion privada: subir solo el ejemplo sin secretos
 **/.env
 **/.env.*
 !**/.env.example
-*.log
-.DS_Store
-.verificacion-browser/
-docs/evidencias/
+**/.aws/
+
+# Verificaciones locales y paquetes de despliegue
+/.verificacion-browser/
+/docs/evidencias/
 **/.lambda-package.*/
-**/iarmatucv-lambda-*.zip
+*.zip
+
+# Python: cache y entornos virtuales locales
+**/__pycache__/
+*.pyc
+**/.venv/
+**/venv/
+**/.pytest_cache/
+
+# Archivos temporales, copias de respaldo y logs
+**/.cache/
+**/tmp/
+**/temp/
+*.log
+*.tmp
+*.bak
+*.swp
+*~
+
+# Archivos del sistema operativo
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# CARPETAS QUE NO SE SUBEN AL REPOSITORIO
+# Paquete de integracion para compartir por separado; la app no depende de IA/
+/IA/
+# Bocetos y material historico; el codigo actual esta en Back End/ y Front End/
+/Arquitectura AWS/
+
+# Mantener versionados: Back End/, Front End/, docs/, scripts/,
+# README.md, package.json, lockfiles, configuraciones y pruebas.

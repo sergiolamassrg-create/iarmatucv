@@ -6,6 +6,6 @@ import { AuthService } from '../services/auth.service';
 export const authGuard: CanActivateFn = () => {
   const auth = inject(AuthService);
   const router = inject(Router);
-  if (auth.user) return true;
+  if (auth.isAuthenticated()) return true;
   return auth.waitForSession().pipe(map(user => user ? true : router.createUrlTree(['/acceso'])));
 };
